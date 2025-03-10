@@ -5,7 +5,7 @@ BRAC University | Spring 2025
 
 ---
 
-## 🌟 Features Implemented
+## 🌟 Features That wil be done for sprint 01
 
 - 🔍 Browse & Filter Tour Packages  
 - 🧾 View Package Details & Itinerary  
