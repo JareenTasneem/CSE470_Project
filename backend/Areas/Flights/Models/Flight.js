@@ -7,6 +7,7 @@ const flightSchema = new mongoose.Schema({
   to: String,
   date: Date,
   price: Number,
+  airline_logo: String,
   seats_available: Number
 }, { timestamps: true });
 

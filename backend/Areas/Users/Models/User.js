@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   user_type: { type: String, enum: ["Customer", "Admin"], default: "Customer" },
   passport_id: String,
+  images: [String],
   loyaltyPoints: { type: Number, default: 0 },
   membership_tier: { type: String, enum: ["Bronze", "Silver", "Gold"], default: "Bronze" }
 }, { timestamps: true });

@@ -19,7 +19,6 @@ mongoose.connect(process.env.MONGO_URI)
 
 async function seedData() {
   try {
-    // Clear collections
     await User.deleteMany();
     await Hotel.deleteMany();
     await Flight.deleteMany();
@@ -27,7 +26,6 @@ async function seedData() {
     await Booking.deleteMany();
     await Payment.deleteMany();
     await Review.deleteMany();
-
     console.log("🧹 Cleared existing data...");
 
     // Users
@@ -44,7 +42,7 @@ async function seedData() {
         passport_id: faker.string.alphanumeric(9).toUpperCase(),
         loyaltyPoints: faker.number.int({ min: 0, max: 1000 }),
         membership_tier: faker.helpers.arrayElement(["Bronze", "Silver", "Gold"]),
-        profile_picture: faker.image.avatar() // Dummy profile picture
+        profile_picture: faker.image.avatar()
       });
     }
     const insertedUsers = await User.insertMany(users);
@@ -61,10 +59,7 @@ async function seedData() {
         price_per_night: faker.number.int({ min: 50, max: 500 }),
         room_types: faker.helpers.arrayElements(["Single", "Double", "Suite"], 2),
         amenities: faker.helpers.arrayElements(["WiFi", "Pool", "Gym", "Spa", "AC", "Breakfast"], 3),
-        images: [
-          faker.image.urlLoremFlickr({ category: 'hotel' }), 
-          faker.image.urlLoremFlickr({ category: 'resort' })
-        ]
+        images: [faker.image.url(), faker.image.url()]
       });
     }
     const insertedHotels = await Hotel.insertMany(hotels);
@@ -81,7 +76,7 @@ async function seedData() {
         date: faker.date.future(),
         price: faker.number.int({ min: 100, max: 1500 }),
         seats_available: faker.number.int({ min: 50, max: 300 }),
-        airline_logo: faker.image.urlLoremFlickr({ category: 'plane' }) // Dummy airline logo
+        airline_logo: faker.image.url()
       });
     }
     const insertedFlights = await Flight.insertMany(flights);
@@ -105,10 +100,7 @@ async function seedData() {
         hotels: randomHotels.map(h => h._id),
         flights: randomFlights.map(f => f._id),
         created_by: randomUser._id,
-        images: [
-          faker.image.urlLoremFlickr({ category: 'travel' }),
-          faker.image.urlLoremFlickr({ category: 'beach' })
-        ]
+        images: [faker.image.url(), faker.image.url()]
       });
     }
     const insertedPackages = await TourPackage.insertMany(packages);
@@ -173,7 +165,6 @@ async function seedData() {
 
     mongoose.connection.close();
     console.log("🎉 All data seeded and MongoDB connection closed.");
-
   } catch (err) {
     console.error("❌ Seeding error:", err);
   }

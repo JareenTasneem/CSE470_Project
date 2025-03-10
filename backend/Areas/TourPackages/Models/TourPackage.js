@@ -11,6 +11,7 @@ const tourPackageSchema = new mongoose.Schema({
   hotels: [{ type: mongoose.Schema.Types.ObjectId, ref: "Hotel" }],
   flights: [{ type: mongoose.Schema.Types.ObjectId, ref: "Flight" }],
   bookings: [{ type: mongoose.Schema.Types.ObjectId, ref: "Booking" }],
+  images: [String],
   created_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
 }, { timestamps: true });
 

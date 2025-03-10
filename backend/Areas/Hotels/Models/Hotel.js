@@ -7,7 +7,9 @@ const hotelSchema = new mongoose.Schema({
   description: String,
   price_per_night: Number,
   room_types: [{ type: String, enum: ["Single", "Double", "Suite"] }],
-  amenities: [String]
+  amenities: [String],
+  images: [String]
+
 }, { timestamps: true });
 
 module.exports = mongoose.model("Hotel", hotelSchema);
