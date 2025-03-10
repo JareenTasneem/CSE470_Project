@@ -36,7 +36,7 @@ BRAC University | Spring 2025
 
 ## 👥 Team Members
 
-| Name               | Task                          |
+| Name               | Task   (Sprint 1)                       |
 |--------------------|-------------------------------|
 | **Ritu**           | Browse & Search Packages       |
 | **Marzuk**         | Package Details & Itinerary    |
