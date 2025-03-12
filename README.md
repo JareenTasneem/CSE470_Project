@@ -5,7 +5,7 @@ BRAC University | Spring 2025
 
 ---
 
-## 🌟 Features That wil be done for sprint 01
+## 🌟 Features That Will be done for Sprint 01
 
 - 🔍 Browse & Filter Tour Packages  
 - 🧾 View Package Details & Itinerary  
@@ -28,7 +28,7 @@ BRAC University | Spring 2025
 
 1. `git clone` this repository  
 2. Navigate to `backend/`, install dependencies  
-3. Create `.env` file with MongoDB URI  
+3. Create a `.env` file with your MongoDB URI  
 4. Run backend with `node server.js`  
 5. Navigate to `frontend/`, convert HTML to React, and run with `npm run dev`
 
@@ -36,16 +36,18 @@ BRAC University | Spring 2025
 
 ## 👥 Team Members
 
-| Name               | Task   (Sprint 1)                       |
-|--------------------|-------------------------------|
-| **Ritu**           | Browse & Search Packages       |
-| **Marzuk**         | Package Details & Itinerary    |
-| **Jareen Tasneem** | Booking & Availability         |
-| **Naveed**         | Customization & DB Setup       |
+| Name               | Task (Sprint 1)                             |
+|--------------------|---------------------------------------------|
+| **Ritu**           | Browse & Search Packages                    |
+| **Marzuk**         | Package Details & Itinerary **✅**          |
+| **Jareen Tasneem** | Booking & Availability                      |
+| **Naveed**         | Customization & DB Setup                    |
 
 ---
 
 ## 📦 Folder Structure
+
+
 
 ```
 📦 CSE470 Project
