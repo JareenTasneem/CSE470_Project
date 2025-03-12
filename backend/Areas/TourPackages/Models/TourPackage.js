@@ -1,6 +1,6 @@
-// backend/Areas/TourPackages/Models/tourPackage.js
+// backend/Areas/TourPackages/Models/TourPackage.js
 
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const tourPackageSchema = new mongoose.Schema({
   package_id: { type: String, unique: true },
@@ -11,18 +11,18 @@ const tourPackageSchema = new mongoose.Schema({
   price: Number,
   availability: Number,
 
-  // Add these if you want them:
   itinerary: [String],
   inclusions: [String],
   exclusions: [String],
+  additionalInfo: String,  // <-- new field
 
-  hotels: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Hotel' }],
-  flights: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Flight' }],
-  bookings: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Booking' }],
+  hotels: [{ type: mongoose.Schema.Types.ObjectId, ref: "Hotel" }],
+  flights: [{ type: mongoose.Schema.Types.ObjectId, ref: "Flight" }],
+  bookings: [{ type: mongoose.Schema.Types.ObjectId, ref: "Booking" }],
   images: [String],
-  created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  created_by: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
 }, 
 { timestamps: true }
 );
 
-module.exports = mongoose.model('TourPackage', tourPackageSchema);
+module.exports = mongoose.model("TourPackage", tourPackageSchema);

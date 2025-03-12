@@ -111,9 +111,8 @@ function TourPackageDetails() {
         }}
       >
         <h3 style={{ color: "#333" }}>Additional Information</h3>
-        <p style={{ color: "#666" }}>
-          Further details will be added here soon.
-        </p>
+        <p> {pkg.additionalInfo || "Further details will be added here soon."}</p>
+
       </div>
 
       <div style={{ textAlign: "center", marginTop: "20px" }}>

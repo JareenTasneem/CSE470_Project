@@ -1,30 +1,27 @@
-// src/TravelPack.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "./styles/style.css"; // local CSS
+import "./styles/style.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { Link } from "react-router-dom";  // import Link for routing
+import { Link } from "react-router-dom";
 
 const TravelPack = () => {
-  // (Optional: You may fetch packages here if needed for recommendations.)
   const [packages, setPackages] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/tourPackages")
+    axios
+      .get("http://localhost:5000/api/tourPackages")
       .then((response) => setPackages(response.data))
       .catch((err) => console.error("Error fetching packages:", err));
   }, []);
 
   return (
     <div>
-      {/* Header Section */}
       <header className="header">
         <nav className="navbar">
           <h4>Travel Agency || Travel Packs</h4>
           <ul>
             <li><a href="#">Login</a></li>
             <li><a href="#">Sign up</a></li>
-            {/* Remove any duplicate top-right Travel-Packs button */}
           </ul>
         </nav>
 
@@ -45,7 +42,6 @@ const TravelPack = () => {
               <nav className="fin_nav">
                 <ul>
                   <li><a href="#">Home</a></li>
-                  {/* Middle navbar Travel-Packs link */}
                   <li>
                     <Link to="/tourPackages" style={{ color: "white", textDecoration: "none" }}>
                       Travel-Packs
@@ -57,7 +53,6 @@ const TravelPack = () => {
                 </ul>
               </nav>
               <div className="cards">
-                {/* (Filter cards here can remain or be simplified) */}
                 <div className="card">
                   <h4>Country:</h4>
                   <input className="search" type="text" placeholder="Enter name of country" />
@@ -79,26 +74,32 @@ const TravelPack = () => {
         </div>
       </header>
 
-      {/* Offers Section (Optional: You can leave this as is) */}
       <div className="offers">
         <h1>Recommendations for You</h1>
         <p>choose your next destination</p>
+
         <div className="cards">
           {packages.map((pkg) => (
             <div className="card" key={pkg._id} style={{ width: "300px" }}>
               <div className="img_text">
-                <img src="/images/temp4.jpeg" alt="" />
-                <h4>Included: {pkg.inclusions?.join(", ")}</h4>
+                {/* Use the seeded image if available, otherwise fallback */}
+                <img
+                  src={
+                    pkg.images && pkg.images.length > 0
+                      ? pkg.images[0]
+                      : "/images/temp4.jpeg"
+                  }
+                  alt="Tour"
+                  style={{ width: "100%", height: "150px", objectFit: "cover" }}
+                />
+                <h4>Included: {pkg.inclusions?.join(", ") || "No inclusions listed"}</h4>
               </div>
+
               <div className="cont_bx">
                 <div className="price">
                   <div className="heart_chat">
-                    <i className="bi bi-heart-fill">
-                      <span>234</span>
-                    </i>
-                    <i className="bi bi-chat-fill">
-                      <span>567</span>
-                    </i>
+                    <i className="bi bi-heart-fill"><span>234</span></i>
+                    <i className="bi bi-chat-fill"><span>567</span></i>
                   </div>
                   <h3>{pkg.package_title}</h3>
                   <p>{pkg.package_details}</p>
@@ -113,14 +114,13 @@ const TravelPack = () => {
         </div>
       </div>
 
-      {/* Example "Also Like" Section */}
       <div className="also_like">
         <div className="img_box">
           <img src="/images/temp4.jpeg" alt="temp" />
         </div>
         <div className="of_box">
           <h4>Name of offer</h4>
-          <p>short description of the offer. ...</p>
+          <p>short description of the offer...</p>
           <h6>Included: Hotel, Tour, Food</h6>
           <button>More Info</button>
         </div>
