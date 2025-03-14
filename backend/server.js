@@ -30,6 +30,10 @@ const tourPackageRoutes = require("./Areas/TourPackages/Routes/tourPackage.route
 // 2) Mount the router at /api/tourPackages
 app.use("/api/tourPackages", tourPackageRoutes);
 
+const userRoutes = require("./Areas/Users/Routes/user.routes");
+app.use("/api/users", userRoutes);
+
+
 // Simple test route to confirm server is up
 app.get("/", (req, res) => {
   res.send("🌍 Travel Agency API is running!");
