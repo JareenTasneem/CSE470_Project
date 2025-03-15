@@ -1,11 +1,17 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+// src/TravelPack.jsx
+import React, { useEffect, useState, useContext } from "react";
+import axios from "./axiosConfig";
 import "./styles/style.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { Link } from "react-router-dom";
+// Import the AuthContext to access the logged-in user info
+import { AuthContext } from "./contexts/AuthContext";
 
 const TravelPack = () => {
   const [packages, setPackages] = useState([]);
+  
+  // Access the user and logout function from AuthContext
+  const { user, logout } = useContext(AuthContext);
 
   useEffect(() => {
     axios
@@ -20,8 +26,29 @@ const TravelPack = () => {
         <nav className="navbar">
           <h4>Travel Agency || Travel Packs</h4>
           <ul>
-            <li><a href="#">Login</a></li>
-            <li><a href="#">Sign up</a></li>
+            {user ? (
+              <>
+                <li>
+                  <span>{user.name}</span>
+                </li>
+                <li>
+                  <button onClick={logout}>Logout</button>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <Link to="/login" style={{ textDecoration: "none", color: "inherit" }}>
+                    Login
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/signup" style={{ textDecoration: "none", color: "inherit" }}>
+                    Sign up
+                  </Link>
+                </li>
+              </>
+            )}
           </ul>
         </nav>
 
@@ -41,15 +68,21 @@ const TravelPack = () => {
             <div className="filt_box">
               <nav className="fin_nav">
                 <ul>
-                  <li><a href="#">Home</a></li>
+                  <li>
+                    <Link to="/" style={{ color: "white", textDecoration: "none" }}>
+                      Home
+                    </Link>
+                  </li>
                   <li>
                     <Link to="/tourPackages" style={{ color: "white", textDecoration: "none" }}>
                       Travel-Packs
                     </Link>
                   </li>
-                  <li><a href="#">Hotels</a></li>
-                  <li><a href="#">Flights</a></li>
-                  <li><a href="#">Entertainments</a></li>
+                  <li>
+                    <Link to="/customize-package" style={{ color: "white", textDecoration: "none" }}>
+                      Customize-Package
+                    </Link>
+                  </li>
                 </ul>
               </nav>
               <div className="cards">
@@ -82,7 +115,6 @@ const TravelPack = () => {
           {packages.map((pkg) => (
             <div className="card" key={pkg._id} style={{ width: "300px" }}>
               <div className="img_text">
-                {/* Use the seeded image if available, otherwise fallback */}
                 <img
                   src={
                     pkg.images && pkg.images.length > 0
@@ -98,8 +130,12 @@ const TravelPack = () => {
               <div className="cont_bx">
                 <div className="price">
                   <div className="heart_chat">
-                    <i className="bi bi-heart-fill"><span>234</span></i>
-                    <i className="bi bi-chat-fill"><span>567</span></i>
+                    <i className="bi bi-heart-fill">
+                      <span>234</span>
+                    </i>
+                    <i className="bi bi-chat-fill">
+                      <span>567</span>
+                    </i>
                   </div>
                   <h3>{pkg.package_title}</h3>
                   <p>{pkg.package_details}</p>
@@ -128,7 +164,10 @@ const TravelPack = () => {
 
       <footer>
         <h4>We will be putting contact info here</h4>
-        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ea dolore beatae ipsum rerum ab commodi...</p>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Ea dolore beatae ipsum rerum ab
+          commodi...
+        </p>
       </footer>
     </div>
   );

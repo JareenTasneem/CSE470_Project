@@ -30,6 +30,17 @@ const tourPackageRoutes = require("./Areas/TourPackages/Routes/tourPackage.route
 // 2) Mount the router at /api/tourPackages
 app.use("/api/tourPackages", tourPackageRoutes);
 
+const userRoutes = require("./Areas/Users/Routes/user.routes");
+app.use("/api/users", userRoutes);
+
+const flightRoutes = require("./Areas/Flights/Routes/flight.routes.js");
+// const hotelRoutes = require("./Areas/Hotels/Routes/hotel.routes.js");
+// const entertainmentRoutes = require("./Areas/Entertainments/Routes/entertainment.routes.js");
+
+app.use("/api/flights", flightRoutes);
+// app.use("/api/hotels", hotelRoutes);
+// app.use("/api/entertainments", entertainmentRoutes);
+
 // Simple test route to confirm server is up
 app.get("/", (req, res) => {
   res.send("🌍 Travel Agency API is running!");
