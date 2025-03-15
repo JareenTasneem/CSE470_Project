@@ -29,7 +29,11 @@ const TravelPack = () => {
             {user ? (
               <>
                 <li>
+<<<<<<< HEAD
                   <span>{user.name}</span>
+=======
+                  <span>Welcome, {user.name}</span>
+>>>>>>> 2d5f677e73468b7f60912c946a23119414a2ed2a
                 </li>
                 <li>
                   <button onClick={logout}>Logout</button>
@@ -78,8 +82,16 @@ const TravelPack = () => {
                       Travel-Packs
                     </Link>
                   </li>
+<<<<<<< HEAD
                   <li>
                     <Link to="/customize-package" style={{ color: "white", textDecoration: "none" }}>
+=======
+                  {/* <li><a href="#">Hotels</a></li>
+                  <li><a href="#">Flights</a></li>
+                  <li><a href="#">Entertainments</a></li> */}
+                  <li>
+                    <Link to="/customize" style={{ color: "white", textDecoration: "none" }}>
+>>>>>>> 2d5f677e73468b7f60912c946a23119414a2ed2a
                       Customize-Package
                     </Link>
                   </li>

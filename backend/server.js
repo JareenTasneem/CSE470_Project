@@ -33,6 +33,7 @@ app.use("/api/tourPackages", tourPackageRoutes);
 const userRoutes = require("./Areas/Users/Routes/user.routes");
 app.use("/api/users", userRoutes);
 
+<<<<<<< HEAD
 const flightRoutes = require("./Areas/Flights/Routes/flight.routes.js");
 // const hotelRoutes = require("./Areas/Hotels/Routes/hotel.routes.js");
 // const entertainmentRoutes = require("./Areas/Entertainments/Routes/entertainment.routes.js");
@@ -40,6 +41,8 @@ const flightRoutes = require("./Areas/Flights/Routes/flight.routes.js");
 app.use("/api/flights", flightRoutes);
 // app.use("/api/hotels", hotelRoutes);
 // app.use("/api/entertainments", entertainmentRoutes);
+=======
+>>>>>>> 2d5f677e73468b7f60912c946a23119414a2ed2a
 
 // Simple test route to confirm server is up
 app.get("/", (req, res) => {
