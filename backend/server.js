@@ -38,6 +38,15 @@ const flightRoutes = require("./Areas/Flights/Routes/flight.routes.js");
 // const entertainmentRoutes = require("./Areas/Entertainments/Routes/entertainment.routes.js");
 
 app.use("/api/flights", flightRoutes);
+const hotelRoutes = require("./Areas/Hotels/Routes/hotel.routes");
+app.use("/api/hotels", hotelRoutes);
+const entertainmentRoutes = require("./Areas/Entertainments/Routes/entertainment.routes");
+app.use("/api/entertainments", entertainmentRoutes);
+const customPackagesRouter = require("./Areas/CustomPackages/Routes/customPackage.routes.js");
+
+// Mount it under /api/customPackages
+app.use("/api/customPackages", customPackagesRouter);
+
 // app.use("/api/hotels", hotelRoutes);
 // app.use("/api/entertainments", entertainmentRoutes);
 

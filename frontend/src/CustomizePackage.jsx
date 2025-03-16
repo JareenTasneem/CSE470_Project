@@ -1,31 +1,37 @@
 // src/CustomizePackage.jsx
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "./contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom"; // <-- note useLocation import
 import axios from "./axiosConfig";
 
 function CustomizePackage() {
   const { user, logout } = useContext(AuthContext);
 
-  // State for raw data
+  // ---------- REACT ROUTER: LOCATION ----------
+  // This hook allows us to read location.state.packageToEdit if coming from "Edit" in MyCustomPackages
+  const location = useLocation();
+
+  // ---------- STATE: DATA ARRAYS ----------
   const [flights, setFlights] = useState([]);
   const [hotels, setHotels] = useState([]);
   const [entertainments, setEntertainments] = useState([]);
 
-  // State for filters
+  // ---------- STATE: FILTERS ----------
   const [flightFilter, setFlightFilter] = useState({ location: "", priceOrder: "" });
   const [hotelFilter, setHotelFilter] = useState({ location: "", priceOrder: "" });
   const [entFilter, setEntFilter] = useState({ location: "", priceOrder: "" });
 
-  // State for "booked" items
+  // ---------- STATE: BOOKED ITEMS (the ones user chooses) ----------
   const [bookedFlights, setBookedFlights] = useState([]);
   const [bookedHotels, setBookedHotels] = useState([]);
   const [bookedEntertainments, setBookedEntertainments] = useState([]);
 
-  // New state for active category in the right panel
+  // ---------- STATE: ACTIVE PANEL (flights/hotels/entertainments) ----------
   const [activeCategory, setActiveCategory] = useState("flights");
 
-  // Fetch data on mount
+  // ------------------------------------------------------------------
+  // 1) Fetch the lists of flights/hotels/entertainments from the server
+  // ------------------------------------------------------------------
   useEffect(() => {
     axios
       .get("http://localhost:5000/api/flights")
@@ -43,70 +49,250 @@ function CustomizePackage() {
       .catch((err) => console.error("Error fetching entertainments:", err));
   }, []);
 
-  // Filter logic for each category
-  const filteredFlights = flights
-    .filter((flight) =>
-      flight.location?.toLowerCase().includes(flightFilter.location.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (flightFilter.priceOrder === "asc") return a.price - b.price;
-      if (flightFilter.priceOrder === "desc") return b.price - a.price;
-      return 0;
-    });
+  // ------------------------------------------------------------------
+  // 2) If we came from "Edit" in MyCustomPackages, pre-populate the
+  //    booked items from location.state.packageToEdit
+  // ------------------------------------------------------------------
+  useEffect(() => {
+    if (location.state && location.state.packageToEdit) {
+      const pkg = location.state.packageToEdit;
+      console.log("Editing existing package:", pkg);
 
-  const filteredHotels = hotels
-    .filter((hotel) =>
-      hotel.location?.toLowerCase().includes(hotelFilter.location.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (hotelFilter.priceOrder === "asc") return a.price - b.price;
-      if (hotelFilter.priceOrder === "desc") return b.price - a.price;
-      return 0;
-    });
+      // Pre-fill the booked items with the package's existing flights/hotels/entertainments
+      // These should be fully populated objects if you used .populate in your backend
+      // (i.e. each flight has airline_name, from, to, etc.)
+      setBookedFlights(pkg.flights || []);
+      setBookedHotels(pkg.hotels || []);
+      setBookedEntertainments(pkg.entertainments || []);
+    }
+  }, [location.state]);
 
-  const filteredEntertainments = entertainments
-    .filter((ent) =>
-      ent.location?.toLowerCase().includes(entFilter.location.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (entFilter.priceOrder === "asc") return a.price - b.price;
-      if (entFilter.priceOrder === "desc") return b.price - a.price;
-      return 0;
-    });
+  // ---------- SORT HELPER ----------
+  const sortByPrice = (items, order) => {
+    if (order === "asc") return [...items].sort((a, b) => a.price - b.price);
+    if (order === "desc") return [...items].sort((a, b) => b.price - a.price);
+    return items;
+  };
 
-  // Handlers for booking items
-  const handleBookFlight = (flight) => {
+  // ---------- FILTER + SORT: FLIGHTS ----------
+  const filteredFlights = sortByPrice(
+    flights.filter((f) => {
+      const query = flightFilter.location.toLowerCase();
+      return (
+        f.from?.toLowerCase().includes(query) ||
+        f.to?.toLowerCase().includes(query)
+      );
+    }),
+    flightFilter.priceOrder
+  );
+
+  // ---------- FILTER + SORT: HOTELS ----------
+  const filteredHotels = sortByPrice(
+    hotels.filter((h) =>
+      h.location?.toLowerCase().includes(hotelFilter.location.toLowerCase())
+    ),
+    hotelFilter.priceOrder
+  );
+
+  // ---------- FILTER + SORT: ENTERTAINMENTS ----------
+  const filteredEntertainments = sortByPrice(
+    entertainments.filter((e) =>
+      e.location?.toLowerCase().includes(entFilter.location.toLowerCase())
+    ),
+    entFilter.priceOrder
+  );
+
+  // ---------- BOOKING HANDLERS (add to booked items) ----------
+  const handleBookFlight = (flight) =>
     setBookedFlights((prev) => [...prev, flight]);
-  };
 
-  const handleBookHotel = (hotel) => {
+  const handleBookHotel = (hotel) =>
     setBookedHotels((prev) => [...prev, hotel]);
-  };
 
-  const handleBookEntertainment = (ent) => {
+  const handleBookEntertainment = (ent) =>
     setBookedEntertainments((prev) => [...prev, ent]);
+
+  // ---------- REMOVAL HANDLERS (remove from booked items) ----------
+  const handleRemoveFlight = (id) => {
+    setBookedFlights((prev) => prev.filter((f) => f._id !== id));
+  };
+  const handleRemoveHotel = (id) => {
+    setBookedHotels((prev) => prev.filter((h) => h._id !== id));
+  };
+  const handleRemoveEntertainment = (id) => {
+    setBookedEntertainments((prev) => prev.filter((e) => e._id !== id));
   };
 
-  // Handlers for removing booked items
-  const handleRemoveFlight = (flightId) => {
-    setBookedFlights((prev) => prev.filter((f) => f._id !== flightId));
+  // ---------- SAVE CUSTOM PACKAGE ----------
+  const handleSaveCustomPackage = async () => {
+    if (!user) {
+      alert("Please log in first.");
+      return;
+    }
+    try {
+      const payload = {
+        userId: user._id,
+        flights: bookedFlights.map((f) => f._id),
+        hotels: bookedHotels.map((h) => h._id),
+        entertainments: bookedEntertainments.map((e) => e._id),
+      };
+      const response = await axios.post("/customPackages", payload);
+
+      // If your controller returns { customPackage, warnings } with 200:
+      const { customPackage, warnings } = response.data;
+      if (warnings && warnings.length > 0) {
+        alert(
+          `Custom Package Saved (with partial acceptance).\n` +
+          `Warnings:\n- ${warnings.join("\n- ")}\n\n` +
+          `Package ID: ${customPackage.custom_id}`
+        );
+      } else {
+        alert(`Custom Package Saved!\nID: ${customPackage.custom_id}`);
+      }
+    } catch (err) {
+      console.error("Error saving custom package:", err);
+      alert("Failed to save custom package.");
+    }
   };
 
-  const handleRemoveHotel = (hotelId) => {
-    setBookedHotels((prev) => prev.filter((h) => h._id !== hotelId));
-  };
+  // ---------- RENDER: FLIGHT CARD ----------
+  const renderFlightCard = (flight) => (
+    <div
+      key={flight._id}
+      style={{
+        background: "#fff",
+        padding: "10px",
+        border: "1px solid #ccc",
+        borderRadius: "6px",
+        width: "calc(33.33% - 10px)",
+      }}
+    >
+      <img
+        src={flight.airline_logo || "https://via.placeholder.com/300"}
+        alt={flight.airline_name || "Flight"}
+        style={{
+          width: "100%",
+          height: "140px",
+          objectFit: "cover",
+          borderRadius: "4px",
+        }}
+      />
+      <h4 style={{ margin: "10px 0 5px" }}>{flight.airline_name}</h4>
+      <p style={{ margin: "0 0 4px" }}>Price: ${flight.price}</p>
+      <p style={{ margin: "0 0 4px" }}>From: {flight.from}</p>
+      <p style={{ margin: "0 0 4px" }}>To: {flight.to}</p>
+      <p style={{ margin: "0 0 4px" }}>
+        Date: {new Date(flight.date).toLocaleDateString()}
+      </p>
+      <p style={{ margin: "0 0 8px" }}>
+        Seats Available: {flight.seats_available}
+      </p>
+      <button
+        onClick={() => handleBookFlight(flight)}
+        style={{
+          background: "#007bff",
+          color: "#fff",
+          border: "none",
+          padding: "6px 12px",
+          cursor: "pointer",
+          borderRadius: "4px",
+        }}
+      >
+        Book Flight
+      </button>
+    </div>
+  );
 
-  const handleRemoveEntertainment = (entId) => {
-    setBookedEntertainments((prev) => prev.filter((e) => e._id !== entId));
-  };
+  // ---------- RENDER: HOTEL CARD ----------
+  const renderHotelCard = (hotel) => (
+    <div
+      key={hotel._id}
+      style={{
+        background: "#fff",
+        padding: "10px",
+        border: "1px solid #ccc",
+        borderRadius: "6px",
+        width: "calc(33.33% - 10px)",
+      }}
+    >
+      <img
+        src={hotel.images?.[0] || "https://via.placeholder.com/300"}
+        alt={hotel.hotel_name || "Hotel"}
+        style={{
+          width: "100%",
+          height: "140px",
+          objectFit: "cover",
+          borderRadius: "4px",
+        }}
+      />
+      <h4 style={{ margin: "10px 0 5px" }}>{hotel.hotel_name}</h4>
+      <p style={{ margin: "0 0 4px" }}>Price: ${hotel.price_per_night}</p>
+      <p style={{ margin: "0 0 8px" }}>Location: {hotel.location}</p>
+      <button
+        onClick={() => handleBookHotel(hotel)}
+        style={{
+          background: "#007bff",
+          color: "#fff",
+          border: "none",
+          padding: "6px 12px",
+          cursor: "pointer",
+          borderRadius: "4px",
+        }}
+      >
+        Book Hotel
+      </button>
+    </div>
+  );
 
+  // ---------- RENDER: ENTERTAINMENT CARD ----------
+  const renderEntertainmentCard = (ent) => (
+    <div
+      key={ent._id}
+      style={{
+        background: "#fff",
+        padding: "10px",
+        border: "1px solid #ccc",
+        borderRadius: "6px",
+        width: "calc(33.33% - 10px)",
+      }}
+    >
+      <img
+        src={ent.images?.[0] || "https://via.placeholder.com/300"}
+        alt={ent.entertainmentName || "Entertainment"}
+        style={{
+          width: "100%",
+          height: "140px",
+          objectFit: "cover",
+          borderRadius: "4px",
+        }}
+      />
+      <h4 style={{ margin: "10px 0 5px" }}>{ent.entertainmentName}</h4>
+      <p style={{ margin: "0 0 4px" }}>Price: ${ent.price}</p>
+      <p style={{ margin: "0 0 8px" }}>Location: {ent.location}</p>
+      <button
+        onClick={() => handleBookEntertainment(ent)}
+        style={{
+          background: "#007bff",
+          color: "#fff",
+          border: "none",
+          padding: "6px 12px",
+          cursor: "pointer",
+          borderRadius: "4px",
+        }}
+      >
+        Book Entertainment
+      </button>
+    </div>
+  );
+
+  // ---------- MAIN RENDER ----------
   return (
-    <div style={{ fontFamily: "Poppins, sans-serif", maxHeight: "100vh" }}>
-      {/* Header with login/logout */}
-      <header style={{ background: "#333", color: "#fff", padding: "20px", width: "100%", maxHeight: "25px" }}>
+    <div style={{ fontFamily: "Poppins, sans-serif", minHeight: "100vh", background: "#fafafa" }}>
+      {/* ========== HEADER ========== */}
+      <header style={{ background: "#333", color: "#fff", padding: "5px 10px", maxHeight: "50px", width: "100%" }}>
         <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px" }}>
-          <h4 style={{ margin: 0 }}>Customize Package</h4>
-          <ul style={{ listStyle: "none", display: "flex", gap: "10px" }}>
+          <h3 style={{ margin: 0 }}>Customize Package</h3>
+          <ul style={{ display: "flex", gap: "15px", listStyle: "none", margin: 0, padding: 0 }}>
             {user ? (
               <>
                 <li>{user.name}</li>
@@ -119,12 +305,12 @@ function CustomizePackage() {
             ) : (
               <>
                 <li>
-                  <Link to="/login" style={{ textDecoration: "none", color: "#fff" }}>
+                  <Link to="/login" style={{ color: "#fff", textDecoration: "none" }}>
                     Login
                   </Link>
                 </li>
                 <li>
-                  <Link to="/signup" style={{ textDecoration: "none", color: "#fff" }}>
+                  <Link to="/signup" style={{ color: "#fff", textDecoration: "none" }}>
                     Sign up
                   </Link>
                 </li>
@@ -134,29 +320,24 @@ function CustomizePackage() {
         </nav>
       </header>
 
-      {/* Main content area */}
+      {/* ========== BODY LAYOUT ========== */}
       <div style={{ display: "flex" }}>
-        {/* Left sidebar with filters and booked items */}
+        {/* LEFT PANEL: FILTERS & BOOKED ITEMS */}
         <div style={{ width: "300px", background: "#f5f5f5", padding: "20px" }}>
-          <h2>Filters</h2>
-          {/* Flights Filter */}
-          <div style={{ marginBottom: "20px" }}>
-            <h3>Flights</h3>
+          <h2 style={{ marginTop: 0 }}>Filters</h2>
+          {/* FLIGHTS FILTER */}
+          <div style={{ marginBottom: "30px" }} onClick={() => setActiveCategory("flights")}>
+            <h4>Flights</h4>
             <input
-              type="text"
-              placeholder="Location"
+              placeholder="Search from or to"
               value={flightFilter.location}
-              onChange={(e) =>
-                setFlightFilter({ ...flightFilter, location: e.target.value })
-              }
-              style={{ width: "100%", marginBottom: "10px", padding: "5px" }}
+              onChange={(e) => setFlightFilter({ ...flightFilter, location: e.target.value })}
+              style={{ width: "100%", marginBottom: "8px", padding: "6px" }}
             />
             <select
               value={flightFilter.priceOrder}
-              onChange={(e) =>
-                setFlightFilter({ ...flightFilter, priceOrder: e.target.value })
-              }
-              style={{ width: "100%", padding: "5px" }}
+              onChange={(e) => setFlightFilter({ ...flightFilter, priceOrder: e.target.value })}
+              style={{ width: "100%", padding: "6px" }}
             >
               <option value="">Sort by Price</option>
               <option value="asc">Low to High</option>
@@ -164,24 +345,19 @@ function CustomizePackage() {
             </select>
           </div>
 
-          {/* Hotels Filter */}
-          <div style={{ marginBottom: "20px" }}>
-            <h3>Hotels</h3>
+          {/* HOTELS FILTER */}
+          <div style={{ marginBottom: "30px" }} onClick={() => setActiveCategory("hotels")}>
+            <h4>Hotels</h4>
             <input
-              type="text"
-              placeholder="Location"
+              placeholder="Search location"
               value={hotelFilter.location}
-              onChange={(e) =>
-                setHotelFilter({ ...hotelFilter, location: e.target.value })
-              }
-              style={{ width: "100%", marginBottom: "10px", padding: "5px" }}
+              onChange={(e) => setHotelFilter({ ...hotelFilter, location: e.target.value })}
+              style={{ width: "100%", marginBottom: "8px", padding: "6px" }}
             />
             <select
               value={hotelFilter.priceOrder}
-              onChange={(e) =>
-                setHotelFilter({ ...hotelFilter, priceOrder: e.target.value })
-              }
-              style={{ width: "100%", padding: "5px" }}
+              onChange={(e) => setHotelFilter({ ...hotelFilter, priceOrder: e.target.value })}
+              style={{ width: "100%", padding: "6px" }}
             >
               <option value="">Sort by Price</option>
               <option value="asc">Low to High</option>
@@ -189,24 +365,19 @@ function CustomizePackage() {
             </select>
           </div>
 
-          {/* Entertainments Filter */}
-          <div style={{ marginBottom: "20px" }}>
-            <h3>Entertainments</h3>
+          {/* ENTERTAINMENTS FILTER */}
+          <div style={{ marginBottom: "30px" }} onClick={() => setActiveCategory("entertainments")}>
+            <h4>Entertainments</h4>
             <input
-              type="text"
-              placeholder="Location"
+              placeholder="Search location"
               value={entFilter.location}
-              onChange={(e) =>
-                setEntFilter({ ...entFilter, location: e.target.value })
-              }
-              style={{ width: "100%", marginBottom: "10px", padding: "5px" }}
+              onChange={(e) => setEntFilter({ ...entFilter, location: e.target.value })}
+              style={{ width: "100%", marginBottom: "8px", padding: "6px" }}
             />
             <select
               value={entFilter.priceOrder}
-              onChange={(e) =>
-                setEntFilter({ ...entFilter, priceOrder: e.target.value })
-              }
-              style={{ width: "100%", padding: "5px" }}
+              onChange={(e) => setEntFilter({ ...entFilter, priceOrder: e.target.value })}
+              style={{ width: "100%", padding: "6px" }}
             >
               <option value="">Sort by Price</option>
               <option value="asc">Low to High</option>
@@ -214,65 +385,174 @@ function CustomizePackage() {
             </select>
           </div>
 
-          {/* Booked items display */}
-          <div style={{ marginTop: "30px" }}>
-            <h2>Booked Items</h2>
-            <div>
-              <h4>Flights</h4>
-              {bookedFlights.map((f) => (
-                <div key={f._id} style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span>{f.title || f.flightName}</span>
-                  <button onClick={() => handleRemoveFlight(f._id)} style={{ cursor: "pointer" }}>
+          {/* BOOKED ITEMS */}
+          <h3 style={{ marginTop: "30px" }}>Booked Items</h3>
+
+          {/* Booked Flights */}
+          <div style={{ marginBottom: "20px" }}>
+            <h5 style={{ marginBottom: "8px" }}>Flights</h5>
+            {bookedFlights.length === 0 ? (
+              <p style={{ fontSize: "14px", color: "#666" }}>No flights booked yet.</p>
+            ) : (
+              bookedFlights.map((f) => (
+                <div
+                  key={f._id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    background: "#fff",
+                    marginBottom: "5px",
+                    padding: "8px 10px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <span style={{ fontSize: "14px", color: "#333" }}>
+                    {f.airline_name} ({f.from} → {f.to})
+                  </span>
+                  <button
+                    onClick={() => handleRemoveFlight(f._id)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "red",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                    }}
+                  >
                     X
                   </button>
                 </div>
-              ))}
-            </div>
-            <div>
-              <h4>Hotels</h4>
-              {bookedHotels.map((h) => (
-                <div key={h._id} style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span>{h.title || h.hotelName}</span>
-                  <button onClick={() => handleRemoveHotel(h._id)} style={{ cursor: "pointer" }}>
-                    X
-                  </button>
-                </div>
-              ))}
-            </div>
-            <div>
-              <h4>Entertainments</h4>
-              {bookedEntertainments.map((e) => (
-                <div key={e._id} style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span>{e.title || e.entertainmentName}</span>
-                  <button onClick={() => handleRemoveEntertainment(e._id)} style={{ cursor: "pointer" }}>
-                    X
-                  </button>
-                </div>
-              ))}
-            </div>
+              ))
+            )}
           </div>
+
+          {/* Booked Hotels */}
+          <div style={{ marginBottom: "20px" }}>
+            <h5 style={{ marginBottom: "8px" }}>Hotels</h5>
+            {bookedHotels.length === 0 ? (
+              <p style={{ fontSize: "14px", color: "#666" }}>No hotels booked yet.</p>
+            ) : (
+              bookedHotels.map((h) => (
+                <div
+                  key={h._id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    background: "#fff",
+                    marginBottom: "5px",
+                    padding: "8px 10px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <span style={{ fontSize: "14px", color: "#333" }}>
+                    {h.hotel_name} in {h.location}
+                  </span>
+                  <button
+                    onClick={() => handleRemoveHotel(h._id)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "red",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                    }}
+                  >
+                    X
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Booked Entertainments */}
+          <div style={{ marginBottom: "20px" }}>
+            <h5 style={{ marginBottom: "8px" }}>Entertainments</h5>
+            {bookedEntertainments.length === 0 ? (
+              <p style={{ fontSize: "14px", color: "#666" }}>No events booked yet.</p>
+            ) : (
+              bookedEntertainments.map((e) => (
+                <div
+                  key={e._id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    background: "#fff",
+                    marginBottom: "5px",
+                    padding: "8px 10px",
+                    borderRadius: "4px",
+                  }}
+                >
+                  <span style={{ fontSize: "14px", color: "#333" }}>
+                    {e.entertainmentName} in {e.location}
+                  </span>
+                  <button
+                    onClick={() => handleRemoveEntertainment(e._id)}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      color: "red",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                    }}
+                  >
+                    X
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* SAVE & VIEW BUTTONS */}
+          {user && (
+            <div style={{ marginTop: "20px", textAlign: "center" }}>
+              <button
+                onClick={handleSaveCustomPackage}
+                style={{
+                  background: "#28a745",
+                  color: "#fff",
+                  padding: "10px 20px",
+                  border: "none",
+                  borderRadius: "4px",
+                  marginBottom: "10px",
+                  cursor: "pointer",
+                }}
+              >
+                Save My Custom Package
+              </button>
+              <div style={{ marginTop: "10px" }}>
+                <Link to="/myPackages">
+                  <button
+                    style={{
+                      background: "#007bff",
+                      color: "#fff",
+                      padding: "10px 20px",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    View My Saved Packages
+                  </button>
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Right side: mini nav bar and results list for selected category */}
+        {/* RIGHT PANEL: TABS & RESULTS */}
         <div style={{ flex: 1, padding: "20px" }}>
-          {/* Mini Navigation Bar */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-around",
-              marginBottom: "20px",
-              borderBottom: "1px solid #ccc",
-              paddingBottom: "10px",
-            }}
-          >
+          <div style={{ display: "flex", justifyContent: "space-around", marginBottom: "20px" }}>
             <button
               onClick={() => setActiveCategory("flights")}
               style={{
-                background: activeCategory === "flights" ? "#333" : "#fff",
-                color: activeCategory === "flights" ? "#fff" : "#333",
-                padding: "10px",
+                background: activeCategory === "flights" ? "#444" : "#ccc",
+                color: activeCategory === "flights" ? "#fff" : "#000",
+                padding: "8px 16px",
                 border: "none",
-                cursor: "pointer",
+                borderRadius: "4px",
               }}
             >
               Flights
@@ -280,11 +560,11 @@ function CustomizePackage() {
             <button
               onClick={() => setActiveCategory("hotels")}
               style={{
-                background: activeCategory === "hotels" ? "#333" : "#fff",
-                color: activeCategory === "hotels" ? "#fff" : "#333",
-                padding: "10px",
+                background: activeCategory === "hotels" ? "#444" : "#ccc",
+                color: activeCategory === "hotels" ? "#fff" : "#000",
+                padding: "8px 16px",
                 border: "none",
-                cursor: "pointer",
+                borderRadius: "4px",
               }}
             >
               Hotels
@@ -292,89 +572,42 @@ function CustomizePackage() {
             <button
               onClick={() => setActiveCategory("entertainments")}
               style={{
-                background: activeCategory === "entertainments" ? "#333" : "#fff",
-                color: activeCategory === "entertainments" ? "#fff" : "#333",
-                padding: "10px",
+                background: activeCategory === "entertainments" ? "#444" : "#ccc",
+                color: activeCategory === "entertainments" ? "#fff" : "#000",
+                padding: "8px 16px",
                 border: "none",
-                cursor: "pointer",
+                borderRadius: "4px",
               }}
             >
               Entertainments
             </button>
           </div>
 
-          {/* Conditionally render the items based on activeCategory */}
-          {activeCategory === "flights" && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-              {filteredFlights.map((flight) => (
-                <div
-                  key={flight._id}
-                  style={{
-                    background: "#fff",
-                    padding: "10px",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    width: "calc(33.33% - 20px)",
-                  }}
-                >
-                  <h4>{flight.title || flight.flightName}</h4>
-                  <p>Price: ${flight.price}</p>
-                  <p>Location: {flight.location}</p>
-                  <button onClick={() => handleBookFlight(flight)} style={{ cursor: "pointer" }}>
-                    Book Flight
-                  </button>
-                </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+            {/* FLIGHTS */}
+            {activeCategory === "flights" &&
+              (filteredFlights.length > 0 ? (
+                filteredFlights.map((flight) => renderFlightCard(flight))
+              ) : (
+                <p>No flights found.</p>
               ))}
-            </div>
-          )}
 
-          {activeCategory === "hotels" && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-              {filteredHotels.map((hotel) => (
-                <div
-                  key={hotel._id}
-                  style={{
-                    background: "#fff",
-                    padding: "10px",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    width: "calc(33.33% - 20px)",
-                  }}
-                >
-                  <h4>{hotel.title || hotel.hotelName}</h4>
-                  <p>Price: ${hotel.price}</p>
-                  <p>Location: {hotel.location}</p>
-                  <button onClick={() => handleBookHotel(hotel)} style={{ cursor: "pointer" }}>
-                    Book Hotel
-                  </button>
-                </div>
+            {/* HOTELS */}
+            {activeCategory === "hotels" &&
+              (filteredHotels.length > 0 ? (
+                filteredHotels.map((hotel) => renderHotelCard(hotel))
+              ) : (
+                <p>No hotels found.</p>
               ))}
-            </div>
-          )}
 
-          {activeCategory === "entertainments" && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-              {filteredEntertainments.map((ent) => (
-                <div
-                  key={ent._id}
-                  style={{
-                    background: "#fff",
-                    padding: "10px",
-                    border: "1px solid #ccc",
-                    borderRadius: "4px",
-                    width: "calc(33.33% - 20px)",
-                  }}
-                >
-                  <h4>{ent.title || ent.entertainmentName}</h4>
-                  <p>Price: ${ent.price}</p>
-                  <p>Location: {ent.location}</p>
-                  <button onClick={() => handleBookEntertainment(ent)} style={{ cursor: "pointer" }}>
-                    Book Entertainment
-                  </button>
-                </div>
+            {/* ENTERTAINMENTS */}
+            {activeCategory === "entertainments" &&
+              (filteredEntertainments.length > 0 ? (
+                filteredEntertainments.map((ent) => renderEntertainmentCard(ent))
+              ) : (
+                <p>No entertainments found.</p>
               ))}
-            </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
