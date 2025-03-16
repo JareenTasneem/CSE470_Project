@@ -168,9 +168,7 @@ async function seedData() {
         hotel_id: faker.string.uuid(),
         hotel_name: hotelName,
         location: city,
-        description: `Stay at ${hotelName} in ${city}. ${lorem.generateSentences(
-          2
-        )}`,
+        description: `Stay at ${hotelName} in ${city}. ${lorem.generateSentences(2)}`,
         price_per_night: faker.number.int({ min: 50, max: 500 }),
         room_types: faker.helpers.arrayElements(["Single", "Double", "Suite"], 2),
         amenities: faker.helpers.arrayElements(
@@ -178,15 +176,10 @@ async function seedData() {
           3
         ),
         images: [
-          `https://picsum.photos/640/480?random=${faker.number.int({
-            min: 1,
-            max: 99999,
-          })}`,
-          `https://picsum.photos/640/480?random=${faker.number.int({
-            min: 1,
-            max: 99999,
-          })}`,
+          `https://picsum.photos/640/480?random=${faker.number.int({ min: 1, max: 99999 })}`,
+          `https://picsum.photos/640/480?random=${faker.number.int({ min: 1, max: 99999 })}`,
         ],
+        rooms_available: faker.number.int({ min: 10, max: 50 }) // NEW field added
       });
     }
     const insertedHotels = await Hotel.insertMany(hotels);
@@ -209,10 +202,7 @@ async function seedData() {
         date: faker.date.future(),
         price: faker.number.int({ min: 100, max: 1500 }),
         seats_available: faker.number.int({ min: 50, max: 300 }),
-        airline_logo: `https://picsum.photos/640/480?random=${faker.number.int({
-          min: 1,
-          max: 99999,
-        })}`,
+        airline_logo: `https://picsum.photos/640/480?random=${faker.number.int({ min: 1, max: 99999 })}`,
       });
     }
     const insertedFlights = await Flight.insertMany(flights);
@@ -253,12 +243,8 @@ async function seedData() {
 
       packages.push({
         package_id: faker.string.uuid(),
-        package_title: `${
-          faker.helpers.arrayElement(packageAdjectives)
-        } Journey to ${city}`,
-        package_details: `Explore the wonders of ${city}. ${lorem.generateSentences(
-          2
-        )}`,
+        package_title: `${faker.helpers.arrayElement(packageAdjectives)} Journey to ${city}`,
+        package_details: `Explore the wonders of ${city}. ${lorem.generateSentences(2)}`,
         location: city,
         duration: `${faker.number.int({ min: 3, max: 10 })} days`,
         price: faker.number.int({ min: 300, max: 3000 }),
@@ -271,15 +257,10 @@ async function seedData() {
         flights: randomFlights.map((f) => f._id),
         created_by: randomUser._id,
         images: [
-          `https://picsum.photos/640/480?random=${faker.number.int({
-            min: 1,
-            max: 99999,
-          })}`,
-          `https://picsum.photos/640/480?random=${faker.number.int({
-            min: 1,
-            max: 99999,
-          })}`,
+          `https://picsum.photos/640/480?random=${faker.number.int({ min: 1, max: 99999 })}`,
+          `https://picsum.photos/640/480?random=${faker.number.int({ min: 1, max: 99999 })}`,
         ],
+        maxCapacity: faker.number.int({ min: 50, max: 200 }) // NEW field added
       });
     }
     const insertedPackages = await TourPackage.insertMany(packages);
@@ -311,13 +292,7 @@ async function seedData() {
       payment_id: faker.string.uuid(),
       user: booking.user,
       amount: booking.total_price,
-      method: faker.helpers.arrayElement([
-        "Card",
-        "PayPal",
-        "bKash",
-        "Nagad",
-        "Bank",
-      ]),
+      method: faker.helpers.arrayElement(["Card", "PayPal", "bKash", "Nagad", "Bank"]),
       status: faker.helpers.arrayElement(["Completed", "Pending", "Refunded"]),
       transaction_date: faker.date.recent(),
     }));

@@ -1,3 +1,4 @@
+// backend/Areas/Flights/Models/Flight.js
 const mongoose = require("mongoose");
 
 const flightSchema = new mongoose.Schema({
@@ -5,7 +6,9 @@ const flightSchema = new mongoose.Schema({
   airline_name: { type: String, required: true },
   from: String,
   to: String,
-  date: Date,
+  date: Date, // you may choose to separate departure and arrival times if needed
+  // Optionally add an arrivalTime field:
+  // arrivalTime: Date,
   price: Number,
   airline_logo: String,
   seats_available: Number
