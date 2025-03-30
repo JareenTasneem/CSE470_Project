@@ -1,6 +1,6 @@
 // backend/seed/seed.js
 const mongoose = require("mongoose");
-require("dotenv").config();
+require("dotenv").config({ path: "../.env" });
 const { faker } = require("@faker-js/faker");
 const { LoremIpsum } = require("lorem-ipsum");
 
@@ -246,7 +246,7 @@ async function seedData() {
         package_title: `${faker.helpers.arrayElement(packageAdjectives)} Journey to ${city}`,
         package_details: `Explore the wonders of ${city}. ${lorem.generateSentences(2)}`,
         location: city,
-        duration: `${faker.number.int({ min: 3, max: 10 })} days`,
+        duration: `${faker.number.int({ min: 2, max: 10 })} days`,
         price: faker.number.int({ min: 300, max: 3000 }),
         availability: faker.number.int({ min: 5, max: 50 }),
         itinerary: generateItinerary(city),
@@ -260,7 +260,7 @@ async function seedData() {
           `https://picsum.photos/640/480?random=${faker.number.int({ min: 1, max: 99999 })}`,
           `https://picsum.photos/640/480?random=${faker.number.int({ min: 1, max: 99999 })}`,
         ],
-        maxCapacity: faker.number.int({ min: 50, max: 200 }) // NEW field added
+        maxCapacity: faker.number.int({ min: 1, max: 30 }) // NEW field added
       });
     }
     const insertedPackages = await TourPackage.insertMany(packages);

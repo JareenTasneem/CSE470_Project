@@ -17,8 +17,8 @@ function CustomizePackage() {
   const [entertainments, setEntertainments] = useState([]);
 
   // ---------- STATE: FILTERS ----------
-  const [flightFilter, setFlightFilter] = useState({ location: "", priceOrder: "" });
-  const [hotelFilter, setHotelFilter] = useState({ location: "", priceOrder: "" });
+  const [flightFilter, setFlightFilter] = useState({ from: "", to: "", date: "", priceOrder: "" });
+  const [hotelFilter, setHotelFilter] = useState({ location: "", roomType: "", priceOrder: "" });
   const [entFilter, setEntFilter] = useState({ location: "", priceOrder: "" });
 
   // ---------- STATE: BOOKED ITEMS (the ones user chooses) ----------
@@ -49,18 +49,11 @@ function CustomizePackage() {
       .catch((err) => console.error("Error fetching entertainments:", err));
   }, []);
 
-  // ------------------------------------------------------------------
-  // 2) If we came from "Edit" in MyCustomPackages, pre-populate the
-  //    booked items from location.state.packageToEdit
-  // ------------------------------------------------------------------
   useEffect(() => {
     if (location.state && location.state.packageToEdit) {
       const pkg = location.state.packageToEdit;
       console.log("Editing existing package:", pkg);
 
-      // Pre-fill the booked items with the package's existing flights/hotels/entertainments
-      // These should be fully populated objects if you used .populate in your backend
-      // (i.e. each flight has airline_name, from, to, etc.)
       setBookedFlights(pkg.flights || []);
       setBookedHotels(pkg.hotels || []);
       setBookedEntertainments(pkg.entertainments || []);
@@ -77,22 +70,29 @@ function CustomizePackage() {
   // ---------- FILTER + SORT: FLIGHTS ----------
   const filteredFlights = sortByPrice(
     flights.filter((f) => {
-      const query = flightFilter.location.toLowerCase();
-      return (
-        f.from?.toLowerCase().includes(query) ||
-        f.to?.toLowerCase().includes(query)
-      );
+      const fromMatch = f.from?.toLowerCase().includes(flightFilter.from.toLowerCase());
+      const toMatch = f.to?.toLowerCase().includes(flightFilter.to.toLowerCase());
+      const dateMatch = flightFilter.date
+        ? new Date(f.date).toISOString().slice(0, 10) === flightFilter.date
+        : true;
+      return fromMatch && toMatch && dateMatch;
     }),
     flightFilter.priceOrder
   );
+  
 
   // ---------- FILTER + SORT: HOTELS ----------
   const filteredHotels = sortByPrice(
-    hotels.filter((h) =>
-      h.location?.toLowerCase().includes(hotelFilter.location.toLowerCase())
-    ),
+    hotels.filter((h) => {
+      const locationMatch = h.location?.toLowerCase().includes(hotelFilter.location.toLowerCase());
+      const roomMatch =
+        hotelFilter.roomType === "" ||
+        h.room_types?.map((r) => r.toLowerCase()).includes(hotelFilter.roomType.toLowerCase());
+      return locationMatch && roomMatch;
+    }),
     hotelFilter.priceOrder
   );
+  
 
   // ---------- FILTER + SORT: ENTERTAINMENTS ----------
   const filteredEntertainments = sortByPrice(
@@ -138,6 +138,10 @@ function CustomizePackage() {
       };
       const response = await axios.post("/customPackages", payload);
 
+      setBookedFlights([]);
+      setBookedHotels([]);
+      setBookedEntertainments([]);
+      
       // If your controller returns { customPackage, warnings } with 200:
       const { customPackage, warnings } = response.data;
       if (warnings && warnings.length > 0) {
@@ -157,132 +161,148 @@ function CustomizePackage() {
 
   // ---------- RENDER: FLIGHT CARD ----------
   const renderFlightCard = (flight) => (
-    <div
-      key={flight._id}
-      style={{
-        background: "#fff",
-        padding: "10px",
-        border: "1px solid #ccc",
-        borderRadius: "6px",
-        width: "calc(33.33% - 10px)",
-      }}
-    >
-      <img
-        src={flight.airline_logo || "https://via.placeholder.com/300"}
-        alt={flight.airline_name || "Flight"}
+    
+      <div
+        key={flight._id}
         style={{
-          width: "100%",
-          height: "140px",
-          objectFit: "cover",
-          borderRadius: "4px",
-        }}
-      />
-      <h4 style={{ margin: "10px 0 5px" }}>{flight.airline_name}</h4>
-      <p style={{ margin: "0 0 4px" }}>Price: ${flight.price}</p>
-      <p style={{ margin: "0 0 4px" }}>From: {flight.from}</p>
-      <p style={{ margin: "0 0 4px" }}>To: {flight.to}</p>
-      <p style={{ margin: "0 0 4px" }}>
-        Date: {new Date(flight.date).toLocaleDateString()}
-      </p>
-      <p style={{ margin: "0 0 8px" }}>
-        Seats Available: {flight.seats_available}
-      </p>
-      <button
-        onClick={() => handleBookFlight(flight)}
-        style={{
-          background: "#007bff",
-          color: "#fff",
-          border: "none",
-          padding: "6px 12px",
-          cursor: "pointer",
-          borderRadius: "4px",
+          background: "#fff",
+          padding: "10px",
+          border: "1px solid #ccc",
+          borderRadius: "6px",
+          width: "calc(95% - 10px)",  // Change this line to adjust width
+          marginBottom: "10px",
         }}
       >
-        Book Flight
-      </button>
-    </div>
+        <Link to={`/flight/${flight._id}`} style={{ textDecoration: "none", color: "inherit" }}>
+          <img
+            src={flight.airline_logo || "https://via.placeholder.com/300"}
+            alt={flight.airline_name || "Flight"}
+            style={{
+              width: "100%",
+              height: "140px",
+              objectFit: "cover",
+              borderRadius: "4px",
+            }}
+          />
+          <h4 style={{ margin: "10px 0 5px" }}>{flight.airline_name}</h4>
+          <p style={{ margin: "0 0 4px" }}>Price: ${flight.price}</p>
+          <p style={{ margin: "0 0 4px" }}>From: {flight.from}</p>
+          <p style={{ margin: "0 0 4px" }}>To: {flight.to}</p>
+          <p style={{ margin: "0 0 4px" }}>
+            Date: {new Date(flight.date).toLocaleDateString()}
+          </p>
+          <p style={{ margin: "0 0 8px" }}>
+            Seats Available: {flight.seats_available}
+          </p>
+        </Link>
+        <button
+          onClick={() => handleBookFlight(flight)}
+          style={{
+            background: "#007bff",
+            color: "#fff",
+            border: "none",
+            padding: "6px 12px",
+            cursor: "pointer",
+            borderRadius: "4px",
+          }}
+        >
+            Add Flight
+          </button>
+        </div>
   );
 
   // ---------- RENDER: HOTEL CARD ----------
   const renderHotelCard = (hotel) => (
-    <div
-      key={hotel._id}
-      style={{
-        background: "#fff",
-        padding: "10px",
-        border: "1px solid #ccc",
-        borderRadius: "6px",
-        width: "calc(33.33% - 10px)",
-      }}
-    >
-      <img
-        src={hotel.images?.[0] || "https://via.placeholder.com/300"}
-        alt={hotel.hotel_name || "Hotel"}
+    
+      <div
+        key={hotel._id}
         style={{
-          width: "100%",
-          height: "140px",
-          objectFit: "cover",
-          borderRadius: "4px",
-        }}
-      />
-      <h4 style={{ margin: "10px 0 5px" }}>{hotel.hotel_name}</h4>
-      <p style={{ margin: "0 0 4px" }}>Price: ${hotel.price_per_night}</p>
-      <p style={{ margin: "0 0 8px" }}>Location: {hotel.location}</p>
-      <button
-        onClick={() => handleBookHotel(hotel)}
-        style={{
-          background: "#007bff",
-          color: "#fff",
-          border: "none",
-          padding: "6px 12px",
-          cursor: "pointer",
-          borderRadius: "4px",
+          background: "#fff",
+          padding: "10px",
+          border: "1px solid #ccc",
+          borderRadius: "6px",
+          width: "calc(95% - 10px)",  // Change this line to adjust width
+          marginBottom: "10px"
         }}
       >
-        Book Hotel
-      </button>
-    </div>
+        <Link to={`/hotel/${hotel._id}`} style={{ textDecoration: "none", color: "inherit" }}>
+          <img
+            src={hotel.images?.[0] || "https://via.placeholder.com/300"}
+            alt={hotel.hotel_name || "Hotel"}
+            style={{
+              width: "100%",
+              height: "140px",
+              objectFit: "cover",
+              borderRadius: "4px",
+            }}
+          />
+          <h4 style={{ margin: "10px 0 5px" }}>{hotel.hotel_name}</h4>
+          <p style={{ margin: "0 0 4px" }}>Price: ${hotel.price_per_night}</p>
+          <p style={{ margin: "0 0 8px" }}>Location: {hotel.location}</p>
+          <p style={{ margin: "0 0 4px" }}>Rooms Available: {hotel.rooms_available}</p>
+        </Link>
+        <button
+          onClick={() => handleBookHotel(hotel)}
+          style={{
+            background: "#007bff",
+            color: "#fff",
+            border: "none",
+            padding: "6px 12px",
+            cursor: "pointer",
+            borderRadius: "4px",
+          }}
+        >
+          Add Hotel
+        </button>
+      </div>
+    
   );
 
   // ---------- RENDER: ENTERTAINMENT CARD ----------
   const renderEntertainmentCard = (ent) => (
-    <div
-      key={ent._id}
-      style={{
-        background: "#fff",
-        padding: "10px",
-        border: "1px solid #ccc",
-        borderRadius: "6px",
-        width: "calc(33.33% - 10px)",
-      }}
-    >
-      <img
-        src={ent.images?.[0] || "https://via.placeholder.com/300"}
-        alt={ent.entertainmentName || "Entertainment"}
+    
+      <div
+        key={ent._id}
         style={{
-          width: "100%",
-          height: "140px",
-          objectFit: "cover",
-          borderRadius: "4px",
-        }}
-      />
-      <h4 style={{ margin: "10px 0 5px" }}>{ent.entertainmentName}</h4>
-      <p style={{ margin: "0 0 4px" }}>Price: ${ent.price}</p>
-      <p style={{ margin: "0 0 8px" }}>Location: {ent.location}</p>
-      <button
-        onClick={() => handleBookEntertainment(ent)}
-        style={{
-          background: "#007bff",
-          color: "#fff",
-          border: "none",
-          padding: "6px 12px",
-          cursor: "pointer",
-          borderRadius: "4px",
+          background: "#fff",
+          padding: "10px",
+          border: "1px solid #ccc",
+          borderRadius: "6px",
+          width: "calc(95% - 10px)",  // Change this line to adjust width
+          marginBottom: "10px"
         }}
       >
-        Book Entertainment
-      </button>
-    </div>
+        <Link to={`/entertainment/${ent._id}`} style={{ textDecoration: "none", color: "inherit" }}>
+          <img
+            src={ent.images?.[0] || "https://via.placeholder.com/300"}
+            alt={ent.entertainmentName || "Entertainment"}
+            style={{
+              width: "100%",
+              height: "140px",
+              objectFit: "cover",
+              borderRadius: "4px",
+            }}
+          />
+          <h4 style={{ margin: "10px 0 5px" }}>{ent.entertainmentName}</h4>
+          <p style={{ margin: "0 0 4px" }}>Price: ${ent.price}</p>
+          <p style={{ margin: "0 0 8px" }}>Location: {ent.location}</p>
+        </Link>
+        <button
+          onClick={() => handleBookEntertainment(ent)}
+          style={{
+            background: "#007bff",
+            color: "#fff",
+            border: "none",
+            padding: "6px 12px",
+            cursor: "pointer",
+            borderRadius: "4px",
+          }}
+        >
+          Add Entertainment
+        </button>
+
+      </div>
+    
   );
 
   // ---------- MAIN RENDER ----------
@@ -329,16 +349,23 @@ function CustomizePackage() {
           <div style={{ marginBottom: "30px" }} onClick={() => setActiveCategory("flights")}>
             <h4>Flights</h4>
             <input
-              placeholder="Search from or to"
-              value={flightFilter.location}
-              onChange={(e) => setFlightFilter({ ...flightFilter, location: e.target.value })}
-              style={{ width: "100%", marginBottom: "8px", padding: "6px" }}
+              placeholder="From"
+              value={flightFilter.from}
+              onChange={(e) => setFlightFilter({ ...flightFilter, from: e.target.value })}
+            />
+            <input
+              placeholder="To"
+              value={flightFilter.to}
+              onChange={(e) => setFlightFilter({ ...flightFilter, to: e.target.value })}
+            />
+            <input
+              type="date"
+              value={flightFilter.date}
+              onChange={(e) => setFlightFilter({ ...flightFilter, date: e.target.value })}
             />
             <select
               value={flightFilter.priceOrder}
-              onChange={(e) => setFlightFilter({ ...flightFilter, priceOrder: e.target.value })}
-              style={{ width: "100%", padding: "6px" }}
-            >
+              onChange={(e) => setFlightFilter({ ...flightFilter, priceOrder: e.target.value })}>
               <option value="">Sort by Price</option>
               <option value="asc">Low to High</option>
               <option value="desc">High to Low</option>
@@ -349,16 +376,21 @@ function CustomizePackage() {
           <div style={{ marginBottom: "30px" }} onClick={() => setActiveCategory("hotels")}>
             <h4>Hotels</h4>
             <input
-              placeholder="Search location"
+              placeholder="Location"
               value={hotelFilter.location}
               onChange={(e) => setHotelFilter({ ...hotelFilter, location: e.target.value })}
-              style={{ width: "100%", marginBottom: "8px", padding: "6px" }}
             />
             <select
+              value={hotelFilter.roomType}
+              onChange={(e) => setHotelFilter({ ...hotelFilter, roomType: e.target.value })}>
+              <option value="">All Room Types</option>
+              <option value="Single">Single</option>
+              <option value="Double">Double</option>
+              <option value="Suite">Suite</option>
+            </select>
+            <select
               value={hotelFilter.priceOrder}
-              onChange={(e) => setHotelFilter({ ...hotelFilter, priceOrder: e.target.value })}
-              style={{ width: "100%", padding: "6px" }}
-            >
+              onChange={(e) => setHotelFilter({ ...hotelFilter, priceOrder: e.target.value })}>
               <option value="">Sort by Price</option>
               <option value="asc">Low to High</option>
               <option value="desc">High to Low</option>
@@ -532,9 +564,24 @@ function CustomizePackage() {
                       border: "none",
                       borderRadius: "4px",
                       cursor: "pointer",
+                      marginBottom: "10px",
                     }}
                   >
                     View My Saved Packages
+                  </button>
+                </Link>
+                <Link to="/confirmedBookings">
+                  <button
+                    style={{
+                      background: "#6c63ff",
+                      color: "#fff",
+                      padding: "10px 20px",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Confirmed Bookings
                   </button>
                 </Link>
               </div>

@@ -1,4 +1,3 @@
-// backend/Areas/Flights/Models/Flight.js
 const mongoose = require("mongoose");
 
 const flightSchema = new mongoose.Schema({
@@ -11,7 +10,35 @@ const flightSchema = new mongoose.Schema({
   // arrivalTime: Date,
   price: Number,
   airline_logo: String,
-  seats_available: Number
+  seats_available: { type: Number, default: 0 }
 }, { timestamps: true });
+
+// Static method to decrement available seats
+flightSchema.statics.decrementSeats = async function(flightId) {
+  try {
+    const flight = await this.findById(flightId); // Find the flight by its ID
+    if (!flight) {
+      throw new Error("Flight not found");
+    }
+    if (flight.seats_available > 0) {
+      flight.seats_available -= 0.5; // Decrease the number of available seats by 1
+      await flight.save(); // Save the updated flight data
+      return flight;
+    } else {
+      throw new Error("No seats available");
+    }
+  } catch (error) {
+    console.error("Error decrementing seats:", error);
+    throw error; // Pass the error to be handled by the route
+  }
+};
+
+flightSchema.statics.incrementSeats = async function(flightId, count) {
+  return this.findByIdAndUpdate(
+    flightId,
+    { $inc: { seats_available: count } },
+    { new: true }
+  );
+};
 
 module.exports = mongoose.model("Flight", flightSchema);

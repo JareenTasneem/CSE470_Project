@@ -47,8 +47,8 @@ const customPackagesRouter = require("./Areas/CustomPackages/Routes/customPackag
 // Mount it under /api/customPackages
 app.use("/api/customPackages", customPackagesRouter);
 
-// app.use("/api/hotels", hotelRoutes);
-// app.use("/api/entertainments", entertainmentRoutes);
+const bookingRoutes = require("./Areas/Bookings/Routes/booking.routes");
+app.use("/api/bookings", bookingRoutes);
 
 // Simple test route to confirm server is up
 app.get("/", (req, res) => {

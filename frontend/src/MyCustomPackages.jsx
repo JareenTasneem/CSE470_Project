@@ -1,12 +1,12 @@
-// src/MyCustomPackages.jsx
 import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "./contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // for navigate
 import axios from "./axiosConfig";
 
 function MyCustomPackages() {
   const { user } = useContext(AuthContext);
   const [packages, setPackages] = useState([]);
+  const navigate = useNavigate(); // Initialize navigate
 
   useEffect(() => {
     if (!user) return;
@@ -16,7 +16,14 @@ function MyCustomPackages() {
       .catch((err) => console.error("Error fetching custom packages:", err));
   }, [user]);
 
-  // 1) Handler to delete a package
+  // Handler to edit a package (navigate to customize package)
+  const handleEdit = (pkg) => {
+    navigate("/customizePackage", {
+      state: { packageToEdit: pkg },
+    });
+  };
+
+  // Handler to delete a package
   const handleDeletePackage = async (pkgId) => {
     if (!window.confirm("Are you sure you want to delete this package?")) return;
     try {
@@ -26,6 +33,43 @@ function MyCustomPackages() {
     } catch (err) {
       console.error("Error deleting package:", err);
       alert("Failed to delete package.");
+    }
+  };
+
+  // Handler to book a package
+  const handleBook = async (pkg) => {
+    try {
+      // Book Flights
+      for (const flight of pkg.flights) {
+        await axios.post("http://localhost:5000/api/bookings/bookFlight", {
+          flightId: flight._id, // Pass individual flight ID
+        });
+      }
+  
+      // Book Hotels
+      for (const hotel of pkg.hotels) {
+        await axios.post("http://localhost:5000/api/bookings/bookHotel", {
+          hotelId: hotel._id, // Pass individual hotel ID
+        });
+      }
+  
+      // Book Entertainments (no check for already booked)
+      for (const entertainment of pkg.entertainments) {
+        await axios.post("http://localhost:5000/api/bookings/bookEntertainment", {
+          entertainmentId: entertainment._id, // Pass individual entertainment ID
+        });
+      }
+  
+      // Confirm the entire package booking
+      await axios.post("http://localhost:5000/api/bookings/bookPackage", {
+        packageId: pkg._id, // Send custom package ID to finalize
+      });
+  
+      alert("Package and items booked successfully!");
+      navigate("/confirmedBookings");
+    } catch (err) {
+      console.error("Booking failed:", err);
+      alert(`Failed to book pack: ${err.response ? err.response.data.message : err.message}`);
     }
   };
 
@@ -51,9 +95,7 @@ function MyCustomPackages() {
               boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
             }}
           >
-            <h4 style={{ marginBottom: "10px" }}>
-              Package ID: {pkg.custom_id}
-            </h4>
+            <h4 style={{ marginBottom: "10px" }}>Package ID: {pkg.custom_id}</h4>
 
             {/* Flights Section */}
             {pkg.flights && pkg.flights.length > 0 && (
@@ -102,39 +144,48 @@ function MyCustomPackages() {
               </div>
             )}
 
-            {/* Edit & Delete Buttons */}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-              <Link
-                to="/customize-package"
-                state={{ packageToEdit: pkg }}
-                style={{ textDecoration: "none" }}
-              >
-                <button
-                  style={{
-                    background: "#ffc107",
-                    color: "#000",
-                    border: "none",
-                    padding: "8px 16px",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Edit Package
-                </button>
-              </Link>
-
+            {/* Edit & Delete & Book Buttons */}
+            <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
               <button
-                onClick={() => handleDeletePackage(pkg._id)}
                 style={{
-                  background: "#dc3545",
-                  color: "#fff",
+                  backgroundColor: "#ffc107",
                   border: "none",
-                  padding: "8px 16px",
+                  padding: "8px 12px",
                   borderRadius: "4px",
+                  color: "#000",
                   cursor: "pointer",
                 }}
+                onClick={() => handleEdit(pkg)}
+              >
+                Edit Package
+              </button>
+
+              <button
+                style={{
+                  backgroundColor: "#dc3545",
+                  border: "none",
+                  padding: "8px 12px",
+                  borderRadius: "4px",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+                onClick={() => handleDeletePackage(pkg._id)}
               >
                 Delete
+              </button>
+
+              <button
+                style={{
+                  backgroundColor: "#28a745",
+                  border: "none",
+                  padding: "8px 12px",
+                  borderRadius: "4px",
+                  color: "#fff",
+                  cursor: "pointer",
+                }}
+                onClick={() => handleBook(pkg)} // Pass the whole pkg object
+              >
+                Book
               </button>
             </div>
           </div>

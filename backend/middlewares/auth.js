@@ -12,7 +12,7 @@ module.exports = (req, res, next) => {
   try {
     // Verify token using your JWT_SECRET from the .env file
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // Attach decoded payload (e.g., userId, email) to the request
+    req.user = { userId: decoded.userId }; // Attach decoded payload (e.g., userId, email) to the request
     next();
   } catch (error) {
     return res.status(401).json({ message: "Token is not valid" });

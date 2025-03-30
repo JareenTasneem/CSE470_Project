@@ -63,6 +63,8 @@ function TourPackageDetails() {
         <strong>Location:</strong> {pkg.location} &nbsp;|&nbsp;{" "}
         <strong>Duration:</strong> {pkg.duration}
       </p>
+      <p><strong>Max Capacity:</strong> {pkg.maxCapacity}</p>
+      <p><strong>Availability:</strong> {pkg.availability}</p>
       <p style={{ fontSize: "16px", color: "#666", marginTop: "20px" }}>
         <strong>Details:</strong> {pkg.package_details}
       </p>
@@ -113,6 +115,21 @@ function TourPackageDetails() {
         <h3 style={{ color: "#333" }}>Additional Information</h3>
         <p> {pkg.additionalInfo || "Further details will be added here soon."}</p>
 
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <Link
+          to={`/book-package/${pkg._id}`}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#333",
+            color: "#fff",
+            textDecoration: "none",
+            borderRadius: "4px"
+          }}
+        >
+          Book Package
+        </Link>
       </div>
 
       <div style={{ textAlign: "center", marginTop: "20px" }}>
