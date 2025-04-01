@@ -146,7 +146,7 @@ function CustomizePackage() {
       const { customPackage, warnings } = response.data;
       if (warnings && warnings.length > 0) {
         alert(
-          `Custom Package Saved (with partial acceptance).\n` +
+          `Custom Package Saved\n` +
           `Warnings:\n- ${warnings.join("\n- ")}\n\n` +
           `Package ID: ${customPackage.custom_id}`
         );

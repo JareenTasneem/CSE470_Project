@@ -124,14 +124,35 @@ exports.getCustomPackagesByUser = async (req, res) => {
 
 exports.deleteCustomPackage = async (req, res) => {
   try {
-    const { id } = req.params; // or packageId
-    const deletedPkg = await CustomPackage.findByIdAndDelete(id);
+    const { id } = req.params;
 
-    if (!deletedPkg) {
+    // First find the package (DO NOT delete yet!)
+    const customPackage = await CustomPackage.findById(id);
+
+    if (!customPackage) {
       return res.status(404).json({ error: "Custom package not found." });
     }
 
-    return res.status(200).json({ message: "Custom package deleted successfully." });
+    // 1. Increment flight seat availability
+    if (customPackage.flights && customPackage.flights.length > 0) {
+      for (const flightId of customPackage.flights) {
+        await Flight.incrementSeats(flightId, 1);
+      }
+    }
+
+    // 2. Increment hotel room availability
+    if (customPackage.hotels && customPackage.hotels.length > 0) {
+      for (const hotelId of customPackage.hotels) {
+        await Hotel.incrementRooms(hotelId, 1);
+      }
+    }
+
+    // 3. (Optional) Handle entertainments if needed
+
+    // 4. Delete the custom package AFTER restoring resources
+    await CustomPackage.findByIdAndDelete(id);
+
+    return res.status(200).json({ message: "Custom package deleted and availability restored." });
   } catch (err) {
     console.error("Error deleting custom package:", err);
     return res.status(500).json({ error: err.message });

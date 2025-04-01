@@ -19,43 +19,36 @@ exports.createBooking = async (req, res) => {
     // Find the tour package by its ID
     const tourPackage = await TourPackage.findById(packageId);
     let booking;
+    const customPackage = await CustomPackage.findById(packageId)
+      .populate("flights")
+      .populate("hotels")
+      .populate("entertainments");
 
-    if (!tourPackage) {
-      const customPackage = await CustomPackage.findById(packageId)
-        .populate('flights hotels entertainments'); // Populate flights, hotels, and entertainments
-
-      if (!customPackage) {
-        return res.status(404).json({ message: "Package not found" });
-      }
-
-      // Check availability for flights, hotels, and entertainments
+    if (customPackage) {
+      // 🔁 BOOK CUSTOM PACKAGE (CURRENT CODE)
       for (let flight of customPackage.flights) {
         if (flight.seats_available <= 0) {
           return res.status(400).json({ message: `No seats available for flight ${flight.airline_name}` });
         }
       }
-
       for (let hotel of customPackage.hotels) {
         if (hotel.rooms_available <= 0) {
           return res.status(400).json({ message: `No rooms available for hotel ${hotel.hotel_name}` });
         }
       }
 
-      // Proceed with booking flights, hotels, and entertainments
       for (let flight of customPackage.flights) {
-        await Flight.decrementSeats(flight._id); // Decrease seat availability by 1
+        await Flight.decrementSeats(flight._id);
       }
-
       for (let hotel of customPackage.hotels) {
-        await Hotel.decrementRooms(hotel._id); // Decrease room availability by 1
+        await Hotel.decrementRooms(hotel._id);
       }
-
       for (let entertainment of customPackage.entertainments) {
-        await Entertainment.bookEntertainment(entertainment._id); // Mark entertainment as booked
+        await Entertainment.bookEntertainment(entertainment._id);
       }
 
       booking = new Booking({
-        booking_id: uuidv4(), // Generate unique booking ID
+        booking_id: uuidv4(),
         user: userId,
         custom_package: packageId,
         name,
@@ -64,25 +57,32 @@ exports.createBooking = async (req, res) => {
         email,
         departureCity,
         status: "Confirmed",
-        total_price: customPackage.flights.reduce((sum, f) => sum + f.price, 0) +
-                     customPackage.hotels.reduce((sum, h) => sum + h.price_per_night, 0) +
-                     customPackage.entertainments.reduce((sum, e) => sum + e.price, 0),
-        flights: customPackage.flights.map(f => f._id), // Store flight references
-        hotels: customPackage.hotels.map(h => h._id), // Store hotel references
-        entertainments: customPackage.entertainments.map(e => e._id), // Store entertainment references
+        total_price:
+          customPackage.flights.reduce((sum, f) => sum + f.price, 0) +
+          customPackage.hotels.reduce((sum, h) => sum + h.price_per_night, 0) +
+          customPackage.entertainments.reduce((sum, e) => sum + e.price, 0),
+        flights: customPackage.flights.map(f => f._id),
+        hotels: customPackage.hotels.map(h => h._id),
+        entertainments: customPackage.entertainments.map(e => e._id),
       });
 
-    }else{
-    
-    // Check if there is availability
+      await booking.save();
+      console.log("✅ Custom booking saved with:", booking);
+
+    } else {
+      // 🧭 FALLBACK TO TOUR PACKAGE BOOKING
+      const tourPackage = await TourPackage.findById(packageId);
+      if (!tourPackage) {
+        return res.status(404).json({ message: "Package not found" });
+      }
+
       if (tourPackage.availability <= 0) {
         return res.status(400).json({ message: "Package is fully booked" });
       }
-      
-      // Create a new booking document with a unique booking_id
+
       booking = new Booking({
-        booking_id: uuidv4(), // Generate a unique booking id
-        user: userId,  // now coming from the token
+        booking_id: uuidv4(),
+        user: userId,
         tour_package: packageId,
         name,
         numberOfPeople,
@@ -93,14 +93,13 @@ exports.createBooking = async (req, res) => {
         total_price: tourPackage.price,
       });
 
-      await booking.save();  
-    
-      // Decrement package availability by 1
+      await booking.save();
       tourPackage.availability = tourPackage.availability - 1;
       await tourPackage.save();
     }
 
-    await booking.save();    
+
+        
 
     res.status(201).json({ message: "Booking successful", booking });
   } catch (error) {
@@ -115,7 +114,18 @@ exports.getUserBookings = async (req, res) => {
     // req.user should be set by the auth middleware
     const userId = req.user.userId;
     // Populate tour_package field to include package details
-    const bookings = await Booking.find({ user: userId }).populate("tour_package");
+    const bookings = await Booking.find({ user: userId })
+      .populate({
+        path: "custom_package",
+        populate: ["flights", "hotels", "entertainments"]
+      })
+      .populate("tour_package")
+      .populate("flights")
+      .populate("hotels")
+      .populate("entertainments");
+
+    
+    console.log("Bookings:", JSON.stringify(bookings[0], null, 2));
     res.json(bookings);
   } catch (error) {
     console.error("Error fetching user bookings:", error);

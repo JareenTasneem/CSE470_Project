@@ -1,3 +1,4 @@
+// src/MyBookings.jsx
 import React, { useEffect, useState, useContext } from "react";
 import axios from "./axiosConfig";
 import { AuthContext } from "./contexts/AuthContext";
@@ -8,14 +9,14 @@ const MyBookings = ({ setShowModal }) => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch bookings
   useEffect(() => {
     if (!user) return;
 
     axios
-      .get("/bookings/user")
+      .get("/bookings/user", {
+        headers: { Authorization: `Bearer ${user.token}` },
+      })
       .then((res) => {
-        console.log("Bookings received:", res.data);
         setBookings(res.data);
         setLoading(false);
       })
@@ -25,11 +26,12 @@ const MyBookings = ({ setShowModal }) => {
       });
   }, [user]);
 
-  // Cancel a booking
   const cancelBooking = async (id) => {
     try {
       if (window.confirm("Are you sure you want to cancel this booking?")) {
-        await axios.delete(`/bookings/${id}`);
+        await axios.delete(`/bookings/${id}`, {
+          headers: { Authorization: `Bearer ${user.token}` },
+        });
         setBookings((prev) => prev.filter((b) => b._id !== id));
 
         if (setShowModal) setShowModal(false);
@@ -54,7 +56,6 @@ const MyBookings = ({ setShowModal }) => {
     return <p style={{ textAlign: "center" }}>Loading bookings...</p>;
   }
 
-  // 🔍 Filter out cancelled bookings
   const activeBookings = bookings.filter((booking) => booking.status !== "Cancelled");
 
   if (activeBookings.length === 0) {
@@ -78,7 +79,30 @@ const MyBookings = ({ setShowModal }) => {
         }}
       >
         {activeBookings.map((booking) => {
-          const pkg = booking.tour_package;
+          const isCustom = booking.custom_package !== null;
+          const tour = booking.tour_package;
+          const custom = booking.custom_package;
+
+          const flights = isCustom ? custom?.flights || [] : booking.flights || [];
+          const hotels = isCustom ? custom?.hotels || [] : booking.hotels || [];
+          const entertainments = isCustom ? custom?.entertainments || [] : booking.entertainments || [];
+
+          const totalCustomPrice =
+            flights.reduce((sum, f) => sum + (f.price || 0), 0) +
+            hotels.reduce((sum, h) => sum + (h.price_per_night || 0), 0) +
+            entertainments.reduce((sum, e) => sum + (e.price || 0), 0);
+
+          const price = isCustom ? totalCustomPrice : booking.total_price || 0;
+
+          const location =
+            isCustom
+              ? hotels[0]?.location || flights[0]?.to || entertainments[0]?.location || "N/A"
+              : tour?.location || "N/A";
+
+          const title = isCustom ? "Customized Package" : tour?.package_title;
+          const image = isCustom
+            ? hotels[0]?.images?.[0] || flights[0]?.airline_logo || entertainments[0]?.images?.[0] || "/default.jpg"
+            : tour?.images?.[0] || "";
 
           return (
             <div
@@ -92,9 +116,10 @@ const MyBookings = ({ setShowModal }) => {
                 flexDirection: "column",
               }}
             >
+              {/* Header image */}
               <div style={{ height: "180px", overflow: "hidden" }}>
                 <img
-                  src={pkg?.images?.[0] || "/images/temp4.jpeg"}
+                  src={image}
                   alt="Package"
                   style={{
                     width: "100%",
@@ -103,15 +128,62 @@ const MyBookings = ({ setShowModal }) => {
                   }}
                 />
               </div>
+
+              {/* Details */}
               <div style={{ padding: "20px" }}>
-                <h3 style={{ marginBottom: "10px", color: "#333" }}>
-                  {pkg?.package_title || "Customized Package"}
-                </h3>
-                <p><strong>Location:</strong> {pkg?.location || "N/A"}</p>
-                <p><strong>Start Date:</strong> {new Date(booking.startDate).toLocaleDateString()}</p>
+                <h3 style={{ marginBottom: "10px", color: "#333" }}>{title}</h3>
+                <p><strong>Location:</strong> {location}</p>
+                {!isCustom && (
+                  <p><strong>Start Date:</strong> {booking.startDate ? new Date(booking.startDate).toLocaleDateString() : "N/A"}</p>
+                )}
+
                 <p><strong>Status:</strong> {booking.status}</p>
-                <p><strong>Price:</strong> ${booking.total_price}</p>
+                <p><strong>Price:</strong> ${price}</p>
                 <p><strong>Booked On:</strong> {new Date(booking.createdAt).toLocaleDateString()}</p>
+
+                {/* If custom, show details */}
+                {isCustom && (
+                  <>
+                    {flights.length > 0 && (
+                      <div style={{ marginTop: "10px" }}>
+                        <h5>Flights</h5>
+                        <ul>
+                          {flights.map(f => (
+                            <li key={f._id}>
+                              <strong>{f.airline_name}</strong> from <em>{f.from}</em> to <em>{f.to}</em> on {new Date(f.date).toLocaleDateString()} (${f.price})
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {hotels.length > 0 && (
+                      <div>
+                        <h5>Hotels</h5>
+                        <ul>
+                          {hotels.map(h => (
+                            <li key={h._id}>
+                              <strong>{h.hotel_name}</strong> in <em>{h.location}</em> (${h.price_per_night} per night)
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {entertainments.length > 0 && (
+                      <div>
+                        <h5>Entertainments</h5>
+                        <ul>
+                          {entertainments.map(e => (
+                            <li key={e._id}>
+                              <strong>{e.entertainmentName}</strong> in <em>{e.location}</em> (${e.price})
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </>
+                )}
 
                 <button
                   onClick={() => cancelBooking(booking._id)}

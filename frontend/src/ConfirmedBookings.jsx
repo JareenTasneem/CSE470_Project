@@ -15,13 +15,9 @@ function ConfirmedBookings() {
           headers: { Authorization: `Bearer ${user.token}` },
         })
         .then((res) => {
-          console.log("Confirmed bookings data:", res.data); // Log the response to check the data
-          setConfirmedBookings(res.data);
-
           const filteredBookings = res.data.filter(
             (booking) => booking.status !== "Cancelled"
           );
-  
           setConfirmedBookings(filteredBookings);
         })
         .catch((err) => {
@@ -47,85 +43,124 @@ function ConfirmedBookings() {
       });
   };
 
-  const renderBookingItem = (item) => (
-    <div
-      key={item._id}
-      style={{
-        padding: "10px",
-        border: "1px solid #ccc",
-        borderRadius: "6px",
-        marginBottom: "10px",
-        background: "#fff",
-      }}
-    >
-      <h4>{item.name}</h4>
-      <p>Status: {item.status}</p>
-      <p>Total Price: ${item.total_price}</p>
-      <p>Booking Date: {new Date(item.createdAt).toLocaleDateString()}</p>
+  const renderBookingItem = (item) => {
+    const isCustom = item.custom_package !== null;
 
-      <div>
-        <h5>Flights</h5>
-        {item.flights && item.flights.length > 0 ? (
-          item.flights.map((f) => (
-            <div key={f._id}>
-              <p>{f.airline_name} from {f.from} to {f.to}</p>
-              <p>Price: ${f.price}</p>
-            </div>
-          ))
-        ) : (
-          <p>No flights booked.</p>
-        )}
-      </div>
+    const flights = isCustom
+      ? item.custom_package?.flights || []
+      : item.flights || [];
 
-      <div>
-        <h5>Hotels</h5>
-        {item.hotels && item.hotels.length > 0 ? (
-          item.hotels.map((h) => (
-            <div key={h._id}>
-              <p>{h.hotel_name} in {h.location}</p>
-              <p>Price: ${h.price_per_night}</p>
-            </div>
-          ))
-        ) : (
-          <p>No hotels booked.</p>
-        )}
-      </div>
+    const hotels = isCustom
+      ? item.custom_package?.hotels || []
+      : item.hotels || [];
 
-      <div>
-        <h5>Entertainments</h5>
-        {item.entertainments && item.entertainments.length > 0 ? (
-          item.entertainments.map((e) => (
-            <div key={e._id}>
-              <p>{e.entertainmentName} in {e.location}</p>
-              <p>Price: ${e.price}</p>
-            </div>
-          ))
-        ) : (
-          <p>No entertainments booked.</p>
-        )}
-      </div>
-      <button
-        onClick={() => handleDelete(item._id)}
+    const entertainments = isCustom
+      ? item.custom_package?.entertainments || []
+      : item.entertainments || [];
+
+    // 🧮 Total price calculation
+    const customTotal =
+      flights.reduce((sum, f) => sum + (f.price || 0), 0) +
+      hotels.reduce((sum, h) => sum + (h.price_per_night || 0), 0) +
+      entertainments.reduce((sum, e) => sum + (e.price || 0), 0);
+
+    const totalPrice = isCustom ? customTotal : item.total_price || 0;
+
+    const title = isCustom
+      ? `Custom Package ID: ${item.custom_package?.custom_id || "N/A"}`
+      : item.tour_package?.package_title || "Tour Package Booking";
+
+    return (
+      <div
+        key={item._id}
         style={{
-          backgroundColor: "red",
-          color: "white",
-          padding: "5px 10px",
-          border: "none",
-          cursor: "pointer",
-          borderRadius: "4px",
+          padding: "15px",
+          border: "1px solid #ccc",
+          borderRadius: "8px",
+          marginBottom: "15px",
+          background: "#fff",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
         }}
       >
-        Delete Booking
-      </button>
-    </div>
-  );
-  
+        <h4>{title}</h4>
+        <p>Status: {item.status}</p>
+        <p>Total Price: ${totalPrice}</p>
+        <p>Booking Date: {new Date(item.createdAt).toLocaleDateString()}</p>
+
+        {!isCustom && item.tour_package && (
+          <div>
+            <h5>Tour Package Details</h5>
+            <p>Location: {item.tour_package.location}</p>
+            <p>Duration: {item.tour_package.duration}</p>
+            <p>Price: ${item.tour_package.price}</p>
+          </div>
+        )}
+
+        {flights.length > 0 && (
+          <div style={{ marginBottom: "10px" }}>
+            <h5 style={{ marginBottom: "5px" }}>Flights:</h5>
+            <ul style={{ listStyleType: "disc", paddingLeft: "20px" }}>
+              {flights.map((f) => (
+                <li key={f._id}>
+                  <strong>{f.airline_name}</strong> from{" "}
+                  <em>{f.from}</em> to <em>{f.to}</em> on{" "}
+                  {new Date(f.date).toLocaleDateString()} (Price: ${f.price})
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {hotels.length > 0 && (
+          <div style={{ marginBottom: "10px" }}>
+            <h5 style={{ marginBottom: "5px" }}>Hotels:</h5>
+            <ul style={{ listStyleType: "disc", paddingLeft: "20px" }}>
+              {hotels.map((h) => (
+                <li key={h._id}>
+                  <strong>{h.hotel_name}</strong> in <em>{h.location}</em> (Price per night: ${h.price_per_night})
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {entertainments.length > 0 && (
+          <div style={{ marginBottom: "10px" }}>
+            <h5 style={{ marginBottom: "5px" }}>Entertainments:</h5>
+            <ul style={{ listStyleType: "disc", paddingLeft: "20px" }}>
+              {entertainments.map((e) => (
+                <li key={e._id}>
+                  <strong>{e.entertainmentName}</strong> in <em>{e.location}</em> (Price: ${e.price})
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <div style={{ marginTop: "10px" }}>
+          <button
+            onClick={() => handleDelete(item._id)}
+            style={{
+              backgroundColor: "red",
+              color: "white",
+              padding: "8px 12px",
+              border: "none",
+              cursor: "pointer",
+              borderRadius: "4px",
+            }}
+          >
+            Delete Booking
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div>
       <h2>Your Confirmed Bookings</h2>
       {error ? (
-        <p>{error}</p> // Display error message if fetching failed
+        <p>{error}</p>
       ) : confirmedBookings.length > 0 ? (
         confirmedBookings.map((booking) => renderBookingItem(booking))
       ) : (

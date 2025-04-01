@@ -6,6 +6,7 @@ const bookingSchema = new mongoose.Schema({
   booking_id: { type: String, unique: true, required: true }, // Ensure it's required and unique
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   tour_package: { type: mongoose.Schema.Types.ObjectId, ref: "TourPackage", default: null },
+  custom_package: { type: mongoose.Schema.Types.ObjectId, ref: "CustomPackage", default: null }, 
   hotel: { type: mongoose.Schema.Types.ObjectId, ref: "Hotel", default: null },
   flight: { type: mongoose.Schema.Types.ObjectId, ref: "Flight", default: null },
   name: { type: String },
