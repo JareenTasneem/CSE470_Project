@@ -570,7 +570,7 @@ function CustomizePackage() {
                     View My Saved Packages
                   </button>
                 </Link>
-                <Link to="/confirmedBookings">
+                <Link to="/myBookings" state={{ background: location }}>
                   <button
                     style={{
                       background: "#6c63ff",

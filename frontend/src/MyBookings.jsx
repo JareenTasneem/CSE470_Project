@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import axios from "./axiosConfig";
 import { AuthContext } from "./contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const MyBookings = ({ setShowModal }) => {
   const { user } = useContext(AuthContext);
@@ -97,12 +97,12 @@ const MyBookings = ({ setShowModal }) => {
           const location =
             isCustom
               ? hotels[0]?.location || flights[0]?.to || entertainments[0]?.location || "N/A"
-              : tour?.location || "N/A";
+              : tour?.location || booking.hotelMeta?.location || "N/A";
 
-          const title = isCustom ? "Customized Package" : tour?.package_title;
+          const title = isCustom ? "Customized Package" : tour?.package_title  || booking.hotelMeta?.hotel_name || "Hotel Booking";
           const image = isCustom
             ? hotels[0]?.images?.[0] || flights[0]?.airline_logo || entertainments[0]?.images?.[0] || "/default.jpg"
-            : tour?.images?.[0] || "";
+            : tour?.images?.[0] || booking.hotelMeta?.image || "";
 
           return (
             <div
@@ -140,6 +140,13 @@ const MyBookings = ({ setShowModal }) => {
                 <p><strong>Status:</strong> {booking.status}</p>
                 <p><strong>Price:</strong> ${price}</p>
                 <p><strong>Booked On:</strong> {new Date(booking.createdAt).toLocaleDateString()}</p>
+                
+                {booking.hotel && !booking.tour_package && !booking.custom_package && booking.hotel_room_details && (
+                  <p>
+                    <strong>Room Type:</strong> {booking.hotel_room_details.roomType} <br />
+                    <strong>Rooms Booked:</strong> {booking.hotel_room_details.numberOfRooms}
+                  </p>
+                )}
 
                 {/* If custom, show details */}
                 {isCustom && (

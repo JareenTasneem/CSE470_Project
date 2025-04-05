@@ -1,22 +1,63 @@
 // backend/Areas/Bookings/Controllers/booking.controller.js
-const { v4: uuidv4 } = require("uuid");  // Import uuid for generating unique IDs
+const { v4: uuidv4 } = require("uuid");
 const Flight = require("../../Flights/Models/Flight");
 const Hotel = require("../../Hotels/Models/Hotel");
 const Entertainment = require("../../Entertainments/Models/Entertainment");
 const Booking = require("../Models/Booking");
 console.log("DEBUG: Booking import is:", Booking);
 const CustomPackage = require("../../CustomPackages/Models/CustomPackage");
-
 const TourPackage = require("../../TourPackages/Models/TourPackage");
 
 // Create a new booking
 exports.createBooking = async (req, res) => {
   try {
-    // Remove userId from req.body and get it from the token
     const { packageId, name, numberOfPeople, startDate, email, departureCity } = req.body;
-    const userId = req.user.userId; // or req.user._id if that's how you set it in your JWT
+    const userId = req.user.userId;
 
-    // Find the tour package by its ID
+    if (req.body.hotel && req.body.roomType && req.body.numberOfRooms) {
+      const { hotel, roomType, numberOfRooms } = req.body;
+
+      const hotelDoc = await Hotel.findById(hotel);
+      if (!hotelDoc) {
+        return res.status(404).json({ message: "Hotel not found" });
+      }
+
+      const selectedRoom = hotelDoc.room_types.find(rt => rt.type === roomType);
+      if (!selectedRoom || selectedRoom.count < numberOfRooms) {
+        return res.status(400).json({ message: `Not enough rooms available for ${roomType}` });
+      }
+
+      selectedRoom.count -= numberOfRooms;
+      hotelDoc.rooms_available -= numberOfRooms;
+      await hotelDoc.save();
+
+      const booking = new Booking({
+        booking_id: uuidv4(),
+        user: userId,
+        hotel: hotelDoc._id,
+        name,
+        numberOfPeople,
+        startDate,
+        email,
+        departureCity,
+        status: "Pending",
+        total_price: hotelDoc.price_per_night * numberOfRooms,
+        hotelMeta: {
+          hotel_name: hotelDoc.hotel_name,
+          location: hotelDoc.location,
+          image: hotelDoc.images?.[0] || "/default.jpg",
+          price_per_night: hotelDoc.price_per_night,
+        },
+        hotel_room_details: {
+          roomType,
+          numberOfRooms,
+        },
+      });
+
+      await booking.save();
+      return res.status(201).json({ message: "Hotel booking successful", booking });
+    }
+
     const tourPackage = await TourPackage.findById(packageId);
     let booking;
     const customPackage = await CustomPackage.findById(packageId)
@@ -25,7 +66,6 @@ exports.createBooking = async (req, res) => {
       .populate("entertainments");
 
     if (customPackage) {
-      // 🔁 BOOK CUSTOM PACKAGE (CURRENT CODE)
       for (let flight of customPackage.flights) {
         if (flight.seats_available <= 0) {
           return res.status(400).json({ message: `No seats available for flight ${flight.airline_name}` });
@@ -56,7 +96,7 @@ exports.createBooking = async (req, res) => {
         startDate,
         email,
         departureCity,
-        status: "Confirmed",
+        status: "Pending",
         total_price:
           customPackage.flights.reduce((sum, f) => sum + f.price, 0) +
           customPackage.hotels.reduce((sum, h) => sum + h.price_per_night, 0) +
@@ -70,8 +110,6 @@ exports.createBooking = async (req, res) => {
       console.log("✅ Custom booking saved with:", booking);
 
     } else {
-      // 🧭 FALLBACK TO TOUR PACKAGE BOOKING
-      const tourPackage = await TourPackage.findById(packageId);
       if (!tourPackage) {
         return res.status(404).json({ message: "Package not found" });
       }
@@ -89,7 +127,7 @@ exports.createBooking = async (req, res) => {
         startDate,
         email,
         departureCity,
-        status: "Confirmed",
+        status: "Pending",
         total_price: tourPackage.price,
       });
 
@@ -98,9 +136,6 @@ exports.createBooking = async (req, res) => {
       await tourPackage.save();
     }
 
-
-        
-
     res.status(201).json({ message: "Booking successful", booking });
   } catch (error) {
     console.error("Error creating booking:", error);
@@ -108,12 +143,9 @@ exports.createBooking = async (req, res) => {
   }
 };
 
-// Get bookings for the logged-in user
 exports.getUserBookings = async (req, res) => {
   try {
-    // req.user should be set by the auth middleware
     const userId = req.user.userId;
-    // Populate tour_package field to include package details
     const bookings = await Booking.find({ user: userId })
       .populate({
         path: "custom_package",
@@ -124,7 +156,6 @@ exports.getUserBookings = async (req, res) => {
       .populate("hotels")
       .populate("entertainments");
 
-    
     console.log("Bookings:", JSON.stringify(bookings[0], null, 2));
     res.json(bookings);
   } catch (error) {
@@ -133,49 +164,80 @@ exports.getUserBookings = async (req, res) => {
   }
 };
 
-// Cancel a booking and update tour package availability
 exports.cancelBooking = async (req, res) => {
   try {
     const bookingId = req.params.bookingId;
-    const booking = await Booking.findById(bookingId);
-    
-    if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
+    let booking;
+    try {
+      booking = await Booking.findById(bookingId)
+        .populate("flights")
+        .populate("hotels")
+        .populate("entertainments");
+      if (!booking) {
+        console.log("❌ Booking not found with ID:", bookingId);
+        return res.status(404).json({ message: "Booking not found" });
+      }
+    } catch (err) {
+      console.error("❌ Error finding booking:", err);
+      return res.status(500).json({ message: "Failed to fetch booking" });
     }
-    
-    // Check if booking is already cancelled
+
     if (booking.status === "Cancelled") {
       return res.status(400).json({ message: "Booking is already cancelled" });
     }
 
-    // Update booking status to 'Cancelled'
     booking.status = "Cancelled";
 
-    // Increment the tour package's availability by 1
     const tourPackage = await TourPackage.findById(booking.tour_package);
     if (tourPackage) {
-      tourPackage.availability = tourPackage.availability + 1;
+      tourPackage.availability += 1;
       await tourPackage.save();
     }
 
     for (let flightId of booking.flights) {
-      await Flight.incrementSeats(flightId, 1); // Restore 1 seat for each flight
-      await booking.flights.save();
+      await Flight.incrementSeats(flightId, 1);
     }
 
-    // Restore availability of hotels
-    for (let hotelId of booking.hotels) {
-      await Hotel.incrementRooms(hotelId, 1); // Restore 1 room for each hotel
-      await booking.hotels.save();
+    if (booking.hotel && booking.hotel_room_details && typeof booking.hotel_room_details.numberOfRooms === "number") {
+      const hotelDoc = await Hotel.findById(booking.hotel);
+      if (hotelDoc) {
+        const { roomType, numberOfRooms } = booking.hotel_room_details;
+        const room = hotelDoc.room_types.find(r => r.type === roomType);
+        if (room) {
+          room.count += numberOfRooms;
+        }
+        hotelDoc.rooms_available += numberOfRooms;
+        await hotelDoc.save();
+      }
     }
 
-    // Mark entertainments as available again (reset booked status)
     for (let entertainmentId of booking.entertainments) {
-      await Entertainment.markAsAvailable(entertainmentId); // Mark entertainment as available again
+      await Entertainment.markAsAvailable(entertainmentId);
+    }
+
+    // ✅ INCREMENT HOTEL ROOMS FOR CUSTOM PACK HOTELS
+    if (booking.custom_package && booking.hotels.length > 0) {
+      for (let hotelId of booking.hotels) {
+        const hotelDoc = await Hotel.findById(hotelId);
+        if (hotelDoc) {
+          hotelDoc.rooms_available += 1;
+          const defaultRoom = hotelDoc.room_types?.[0];
+          if (defaultRoom) {
+            defaultRoom.count += 1;
+          }
+          await hotelDoc.save();
+        }
+      }
+    }
+
+    // ✅ INCREMENT SEATS FOR CUSTOM PACK FLIGHTS
+    if (booking.custom_package && booking.flights.length > 0) {
+      for (let flightId of booking.flights) {
+        await Flight.incrementSeats(flightId, 1);
+      }
     }
 
     await booking.save();
-
     res.json({ message: "Booking cancelled successfully", booking });
   } catch (error) {
     console.error("Error cancelling booking:", error);

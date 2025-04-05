@@ -43,7 +43,7 @@ function BookPackage() {
         ...formData,
       });
       alert("Booking successful!");
-      navigate("/myBookings"); // redirect to My Bookings page
+      navigate(-1);
     } catch (err) {
       console.error("Error making booking:", err);
       alert("Error processing booking. Please try again.");

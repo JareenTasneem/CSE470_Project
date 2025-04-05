@@ -66,7 +66,7 @@ function MyCustomPackages() {
       });
   
       alert("Package and items booked successfully!");
-      navigate("/confirmedBookings");
+      navigate(-1);
     } catch (err) {
       console.error("Booking failed:", err);
       alert(`Failed to book pack: ${err.response ? err.response.data.message : err.message}`);

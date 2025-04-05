@@ -74,6 +74,16 @@ const TravelPack = () => {
                     </Link>
                   </li>
                   <li>
+                    <Link to="/hotels" style={{ color: "white", textDecoration: "none" }}>
+                      Hotels
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/flights" style={{ color: "white", textDecoration: "none" }}>
+                      Flights
+                    </Link>
+                  </li>
+                  <li>
                     <Link to="/tourPackages" style={{ color: "white", textDecoration: "none" }}>
                       Travel-Packs
                     </Link>

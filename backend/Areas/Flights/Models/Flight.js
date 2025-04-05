@@ -34,11 +34,11 @@ flightSchema.statics.decrementSeats = async function(flightId) {
 };
 
 flightSchema.statics.incrementSeats = async function(flightId, count) {
-  return this.findByIdAndUpdate(
-    flightId,
-    { $inc: { seats_available: count } },
-    { new: true }
-  );
+  const flight = await this.findById(id);
+  if (flight) {
+    flight.seats_available += count;
+    await flight.save();
+  }
 };
 
 module.exports = mongoose.model("Flight", flightSchema);

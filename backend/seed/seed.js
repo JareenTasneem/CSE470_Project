@@ -164,13 +164,22 @@ async function seedData() {
     for (let i = 0; i < 300; i++) {
       const city = faker.helpers.arrayElement(cityPool);
       const hotelName = faker.company.name() + " Hotel";
+
+      // ✅ First: generate roomTypes and calculate total
+      const roomTypes = faker.helpers.arrayElements(["Single", "Double", "Suite"], 2).map(type => ({
+        type,
+        count: faker.number.int({ min: 3, max: 80 })
+      }));
+      const totalRooms = roomTypes.reduce((sum, rt) => sum + rt.count, 0);
+
       hotels.push({
         hotel_id: faker.string.uuid(),
         hotel_name: hotelName,
         location: city,
         description: `Stay at ${hotelName} in ${city}. ${lorem.generateSentences(2)}`,
         price_per_night: faker.number.int({ min: 50, max: 500 }),
-        room_types: faker.helpers.arrayElements(["Single", "Double", "Suite"], 2),
+        room_types: roomTypes,           // ✅ now correctly defined
+        rooms_available: totalRooms,     // ✅ now accurately reflects the room types
         amenities: faker.helpers.arrayElements(
           ["WiFi", "Pool", "Gym", "Spa", "AC", "Breakfast"],
           3
@@ -179,9 +188,10 @@ async function seedData() {
           `https://picsum.photos/640/480?random=${faker.number.int({ min: 1, max: 99999 })}`,
           `https://picsum.photos/640/480?random=${faker.number.int({ min: 1, max: 99999 })}`,
         ],
-        rooms_available: faker.number.int({ min: 10, max: 50 }) // NEW field added
+        star_rating: faker.number.int({ min: 1, max: 5 })
       });
     }
+
     const insertedHotels = await Hotel.insertMany(hotels);
     console.log("✅ 300 hotels seeded");
 
@@ -331,15 +341,15 @@ async function seedData() {
       const randomUser = faker.helpers.arrayElement(insertedUsers);
       const randomFs = faker.helpers.arrayElements(
         insertedFlights,
-        faker.number.int({ min: 0, max: 2 })
+        faker.number.int({ min: 0, max: 4 })
       );
       const randomHs = faker.helpers.arrayElements(
         insertedHotels,
-        faker.number.int({ min: 0, max: 2 })
+        faker.number.int({ min: 0, max: 4 })
       );
       const randomEnts = faker.helpers.arrayElements(
         insertedEntertainments,
-        faker.number.int({ min: 0, max: 2 })
+        faker.number.int({ min: 0, max: 4 })
       );
 
       // No manual _id => Mongoose will create ObjectId automatically
