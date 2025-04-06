@@ -1,44 +1,51 @@
 const mongoose = require("mongoose");
 
-const flightSchema = new mongoose.Schema({
-  flight_id: { type: String, unique: true },
-  airline_name: { type: String, required: true },
-  from: String,
-  to: String,
-  date: Date, // you may choose to separate departure and arrival times if needed
-  // Optionally add an arrivalTime field:
-  // arrivalTime: Date,
-  price: Number,
-  airline_logo: String,
-  seats_available: { type: Number, default: 0 }
-}, { timestamps: true });
+/* Flight Schema with class‑specific seats */
+const flightSchema = new mongoose.Schema(
+  {
+    flight_id:    { type: String, unique: true },
+    airline_name: { type: String, required: true },
+    from:         String,
+    to:           String,
+    date:         Date,
+    price:        Number,
+    airline_logo: String,
 
-// Static method to decrement available seats
-flightSchema.statics.decrementSeats = async function(flightId) {
-  try {
-    const flight = await this.findById(flightId); // Find the flight by its ID
-    if (!flight) {
-      throw new Error("Flight not found");
-    }
-    if (flight.seats_available > 0) {
-      flight.seats_available -= 0.5; // Decrease the number of available seats by 1
-      await flight.save(); // Save the updated flight data
-      return flight;
-    } else {
-      throw new Error("No seats available");
-    }
-  } catch (error) {
-    console.error("Error decrementing seats:", error);
-    throw error; // Pass the error to be handled by the route
-  }
+    /* seat_types mirrors hotel room_types */
+    seat_types: [
+      {
+        type:  { type: String, enum: ["business", "economy"] },
+        count: { type: Number, default: 0 },
+      },
+    ],
+
+    /* derived convenience total */
+    total_seats: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
+
+/* Helpers */
+flightSchema.statics.changeSeatCount = async function (flightId, seatType, qty) {
+  const flight = await this.findById(flightId);
+  if (!flight) throw new Error("Flight not found");
+
+  const seat = flight.seat_types.find((s) => s.type === seatType);
+  if (!seat) throw new Error("Seat type not found");
+  if (seat.count + qty < 0) throw new Error("Not enough seats");
+
+  seat.count += qty;              // qty can be + or –
+  flight.total_seats += qty;
+  await flight.save();
+  return flight;
 };
 
-flightSchema.statics.incrementSeats = async function(flightId, count) {
-  const flight = await this.findById(id);
-  if (flight) {
-    flight.seats_available += count;
-    await flight.save();
-  }
+flightSchema.statics.incrementSeats = async function (flightId, seatType, qty) {
+  return this.changeSeatCount(flightId, seatType, Math.abs(qty));
+};
+
+flightSchema.statics.decrementSeats = async function (flightId, seatType, qty) {
+  return this.changeSeatCount(flightId, seatType, -Math.abs(qty));
 };
 
 module.exports = mongoose.model("Flight", flightSchema);

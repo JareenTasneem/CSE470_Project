@@ -30,6 +30,22 @@ const bookingSchema = new mongoose.Schema({
     image: String,
     price_per_night: Number,
   },
+  
+  flightMeta: {
+    airline_name: String,
+    from: String,
+    to: String,
+    date: Date,
+    airline_logo: String,
+  },
+
+  flight_details: {
+    passportNumber: String,
+    nationality: String,
+    seatPreference: String,
+    seatClass: { type: String, enum: ["business", "economy"], default: "economy" },
+    qty: { type: Number, default: 1 }
+  },
 
   hotel_room_details: {
     roomType: String,

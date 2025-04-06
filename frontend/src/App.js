@@ -21,8 +21,14 @@ import ConfirmedBookings from "./ConfirmedBookings";
 import HotelList from "./HotelList";
 import HotelRoomDetails from "./HotelRoomDetails";
 import BookHotel from "./BookHotel";
+import FlightList from "./FlightList";
+import BookFlight from "./BookFlight"; // Add at the top
+
 
 import { AuthProvider } from "./contexts/AuthContext";
+
+
+
 
 function AppRoutes() {
   const location = useLocation();
@@ -49,6 +55,9 @@ function AppRoutes() {
         <Route path="/hotels" element={<HotelList />} />
         <Route path="/hotels/details/:id" element={<HotelRoomDetails />} />
         <Route path="/book-hotel/:id" element={<BookHotel />} />
+        <Route path="/flights" element={<FlightList />} />
+        <Route path="/flights/details/:id" element={<FlightDetails />} />
+        <Route path="/book-flight/:id" element={<BookFlight />} />
       </Routes>
 
       {/* Modal version of MyBookings (only if navigated with background) */}

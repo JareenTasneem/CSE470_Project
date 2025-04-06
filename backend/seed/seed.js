@@ -195,28 +195,37 @@ async function seedData() {
     const insertedHotels = await Hotel.insertMany(hotels);
     console.log("✅ 300 hotels seeded");
 
-    // 3) Seed Flights
-    const flights = [];
-    for (let i = 0; i < 300; i++) {
-      const fromCity = faker.helpers.arrayElement(cityPool);
-      let toCity = faker.helpers.arrayElement(cityPool);
-      // ensure from != to
-      while (toCity === fromCity) {
-        toCity = faker.helpers.arrayElement(cityPool);
-      }
-      flights.push({
-        flight_id: faker.string.uuid(),
-        airline_name: faker.company.name(),
-        from: fromCity,
-        to: toCity,
-        date: faker.date.future(),
-        price: faker.number.int({ min: 100, max: 1500 }),
-        seats_available: faker.number.int({ min: 50, max: 300 }),
-        airline_logo: `https://picsum.photos/640/480?random=${faker.number.int({ min: 1, max: 99999 })}`,
-      });
-    }
-    const insertedFlights = await Flight.insertMany(flights);
-    console.log("✅ 300 flights seeded");
+// 3) Seed Flights
+const flights = [];
+for (let i = 0; i < 300; i++) {
+  const fromCity = faker.helpers.arrayElement(cityPool);
+  let toCity = faker.helpers.arrayElement(cityPool);
+  while (toCity === fromCity) toCity = faker.helpers.arrayElement(cityPool);
+
+  const businessSeats = faker.number.int({ min: 5, max: 30 });
+  const economySeats = faker.number.int({ min: 50, max: 250 });
+
+  flights.push({
+    flight_id: faker.string.uuid(),
+    airline_name: faker.company.name(),
+    from: fromCity,
+    to: toCity,
+    date: faker.date.future(),
+    price: faker.number.int({ min: 100, max: 1500 }),
+    airline_logo: `https://picsum.photos/640/480?random=${faker.number.int()}`,
+    seat_types: [
+      { type: "business", count: businessSeats },
+      { type: "economy", count: economySeats },
+    ],
+    total_seats: businessSeats + economySeats,
+  });
+}
+
+const insertedFlights = await Flight.insertMany(flights);
+console.log("✅ 300 flights seeded with business & economy seats");
+
+    
+
 
     // 4) Seed Entertainments
     const entertainments = [];

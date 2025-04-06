@@ -33,9 +33,10 @@ app.use("/api/tourPackages", tourPackageRoutes);
 const userRoutes = require("./Areas/Users/Routes/user.routes");
 app.use("/api/users", userRoutes);
 
-const flightRoutes = require("./Areas/Flights/Routes/flight.routes.js");
-// const hotelRoutes = require("./Areas/Hotels/Routes/hotel.routes.js");
-// const entertainmentRoutes = require("./Areas/Entertainments/Routes/entertainment.routes.js");
+const flightRoutes = require("./Areas/Flights/Routes/flight.routes");
+app.use("/api/flights", flightRoutes); // ✅ so it matches frontend’s baseURL
+
+
 
 app.use("/api/flights", flightRoutes);
 const hotelRoutes = require("./Areas/Hotels/Routes/hotel.routes");
