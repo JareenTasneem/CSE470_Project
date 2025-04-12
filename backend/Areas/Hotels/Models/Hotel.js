@@ -46,14 +46,17 @@ hotelSchema.statics.decrementRooms = async function (hotelId, count = 0.5) {
 
 
 // Hotel Model Method
-hotelSchema.statics.incrementRooms = async function (id, count) {
-  const hotel = await this.findById(id);
-  if (hotel) {
-    hotel.rooms_available += count;
-    await hotel.save();
-  }
-};
+hotelSchema.statics.incrementRoomType = async function(hotelId, roomType, count) {
+  const hotel = await this.findById(hotelId);
+  if (!hotel) throw new Error("Hotel not found");
 
+  const selectedRoom = hotel.room_types.find(rt => rt.type === roomType);
+  if (!selectedRoom) throw new Error(`${roomType} room type not found`);
+
+  selectedRoom.count += count;
+  hotel.rooms_available += count;
+  await hotel.save();
+};
 
 
 module.exports = mongoose.model("Hotel", hotelSchema);

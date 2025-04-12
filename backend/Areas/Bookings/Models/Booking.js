@@ -50,7 +50,17 @@ const bookingSchema = new mongoose.Schema({
   hotel_room_details: {
     roomType: String,
     numberOfRooms: Number,
-  }
+  },
+
+  custom_hotel_details: {
+    type: Object, // { hotelId: { roomType, numberOfRooms } }
+    default: {},
+  },
+  
+  custom_flight_details: {
+    type: Object, // { flightId: { seatClass, qty } }
+    default: {},
+  },
 
 }, { timestamps: true });
 

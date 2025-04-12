@@ -192,7 +192,7 @@ function CustomizePackage() {
             Date: {new Date(flight.date).toLocaleDateString()}
           </p>
           <p style={{ margin: "0 0 8px" }}>
-            Seats Available: {flight.seats_available}
+            Seats Available: {flight.total_seats}
           </p>
         </Link>
         <button
@@ -225,7 +225,7 @@ function CustomizePackage() {
           marginBottom: "10px"
         }}
       >
-        <Link to={`/hotel/${hotel._id}`} style={{ textDecoration: "none", color: "inherit" }}>
+        <Link to={`/hotels/details/${hotel._id}`} style={{ textDecoration: "none", color: "inherit" }}>
           <img
             src={hotel.images?.[0] || "https://via.placeholder.com/300"}
             alt={hotel.hotel_name || "Hotel"}

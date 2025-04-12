@@ -24,10 +24,9 @@ import BookHotel from "./BookHotel";
 import FlightList from "./FlightList";
 import BookFlight from "./BookFlight"; // Add at the top
 
+import BookCustomPackage from "./BookCustomPackage";
 
 import { AuthProvider } from "./contexts/AuthContext";
-
-
 
 
 function AppRoutes() {
@@ -58,6 +57,7 @@ function AppRoutes() {
         <Route path="/flights" element={<FlightList />} />
         <Route path="/flights/details/:id" element={<FlightDetails />} />
         <Route path="/book-flight/:id" element={<BookFlight />} />
+        <Route path="/book-custom-package/:id" element={<BookCustomPackage />} />
       </Routes>
 
       {/* Modal version of MyBookings (only if navigated with background) */}

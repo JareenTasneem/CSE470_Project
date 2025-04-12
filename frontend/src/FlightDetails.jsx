@@ -1,11 +1,12 @@
 // src/FlightDetails.jsx
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "./axiosConfig";
 
 const FlightDetails = () => {
   const { id } = useParams();
   const [flight, setFlight] = useState(null);
+  const navigate = useNavigate();
 
   /* ───────── fetch single flight ───────── */
   useEffect(() => {
@@ -48,18 +49,12 @@ const FlightDetails = () => {
       </div>
 
       <div style={{ marginTop: "30px", display: "flex", gap: "10px" }}>
-        <Link
-          to="/flights"
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#333",
-            color: "#fff",
-            textDecoration: "none",
-            borderRadius: "4px",
-          }}
+        <button
+          onClick={() => navigate(-1)}
+          style={{ padding: "10px 20px", backgroundColor: "#333", color: "#fff", borderRadius: "4px", cursor: "pointer" }}
         >
-          ← Back to Flights
-        </Link>
+          ← Go Back
+        </button>
 
         {/* ✅ Functional Book‑Now button */}
         <Link

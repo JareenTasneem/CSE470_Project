@@ -183,7 +183,7 @@ function MyCustomPackages() {
                   color: "#fff",
                   cursor: "pointer",
                 }}
-                onClick={() => handleBook(pkg)} // Pass the whole pkg object
+                onClick={() => navigate(`/book-custom-package/${pkg._id}`)}// Pass the whole pkg object
               >
                 Book
               </button>

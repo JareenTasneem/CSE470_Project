@@ -142,7 +142,7 @@ const BookFlight = () => {
           style={inputStyle}
         />
 
-        <label>Departure City:</label>
+        {/* <label>Departure City:</label>
         <input
           type="text"
           value={departureCity}
@@ -150,7 +150,7 @@ const BookFlight = () => {
           required
           placeholder="Enter departure city"
           style={inputStyle}
-        />
+        /> */}
 
         <p style={{ fontWeight: "bold", fontSize: "18px", marginTop: "15px" }}>
           Total Price: ${totalPrice}

@@ -18,7 +18,10 @@ exports.createCustomPackage = async (req, res) => {
       const flightDocs = await Flight.find({ _id: { $in: flights } });
       console.log("[DEBUG] flightDocs:", flightDocs);
       // Remove flights with insufficient seats.
-      const validFlights = flightDocs.filter(f => f.seats_available > 0);
+      const validFlights = flightDocs.filter(f => {
+        return f.seat_types.some(seat => seat.count > 0);   // At least 1 seat in any class
+      });
+      
       if (validFlights.length < flightDocs.length) {
         const removed = flightDocs.filter(f => f.seats_available <= 0);
         warnings.push(`Removed flights with insufficient seats: ${removed.map(f => f.airline_name).join(", ")}`);
@@ -136,7 +139,7 @@ exports.deleteCustomPackage = async (req, res) => {
     // 1. Increment flight seat availability
     if (customPackage.flights && customPackage.flights.length > 0) {
       for (const flightId of customPackage.flights) {
-        await Flight.incrementSeats(flightId, 1);
+        await Flight.incrementSeats(flightId, "economy", 1);  // Hardcoded economy fix
       }
     }
 

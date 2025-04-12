@@ -11,21 +11,14 @@ function ConfirmedBookings() {
   useEffect(() => {
     if (user) {
       axios
-        .get("/bookings/user", {
+        .get("http://localhost:5000/api/bookings/user", {
           headers: { Authorization: `Bearer ${user.token}` },
         })
         .then((res) => {
-          const data = res.data;
-          console.log("Raw booking data:", data);
-
-          const bookingsArray = Array.isArray(data)
-            ? data
-            : Array.isArray(data.bookings)
-            ? data.bookings
-            : [];
-
-          const filtered = bookingsArray.filter((b) => b.status !== "Cancelled");
-          setConfirmedBookings(filtered);
+          const filteredBookings = res.data.filter(
+            (booking) => booking.status !== "Cancelled"
+          );
+          setConfirmedBookings(filteredBookings);
         })
         .catch((err) => {
           console.error("Error fetching confirmed bookings:", err);
@@ -35,49 +28,44 @@ function ConfirmedBookings() {
   }, [user]);
 
   // ✅ delete booking
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to cancel this booking? This action cannot be undone.")) {
-      axios
-        .delete(`/bookings/${id}`, {
-          headers: { Authorization: `Bearer ${user.token}` },
-        })
-        .then(() => {
-          setConfirmedBookings((prev) => prev.filter((b) => b._id !== id));
-          alert("Booking cancelled successfully.");
-        })
-        .catch(() => alert("Failed to cancel booking."));
-    }
+  const handleDelete = (bookingId) => {
+    axios
+      .delete(`http://localhost:5000/api/bookings/${bookingId}`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      })
+      .then((res) => {
+        alert("Booking deleted successfully.");
+        setConfirmedBookings((prevBookings) =>
+          prevBookings.filter((booking) => booking._id !== bookingId)
+        );
+      })
+      .catch((err) => {
+        alert("Failed to delete booking.");
+      });
   };
+
 
   // ✅ render single booking
   const renderBookingItem = (item) => {
-    console.log("Full booking item:", item);
-    console.log("Flight details:", item.flight_details);
+    const isCustom = item.custom_package !== null;
 
-    const isCustom = !!item.custom_package && typeof item.custom_package === "object";
+    const flights = isCustom
+      ? item.custom_package?.flights || []
+      : item.flights || [];
 
-    const flights = isCustom && Array.isArray(item.custom_package?.flights)
-      ? item.custom_package.flights
-      : Array.isArray(item.flights)
-      ? item.flights
-      : [];
+    const hotels = isCustom
+      ? item.custom_package?.hotels || []
+      : item.hotels || [];
 
-    const hotels = isCustom && Array.isArray(item.custom_package?.hotels)
-      ? item.custom_package.hotels
-      : Array.isArray(item.hotels)
-      ? item.hotels
-      : [];
+    const entertainments = isCustom
+      ? item.custom_package?.entertainments || []
+      : item.entertainments || [];
 
-    const entertainments = isCustom && Array.isArray(item.custom_package?.entertainments)
-      ? item.custom_package.entertainments
-      : Array.isArray(item.entertainments)
-      ? item.entertainments
-      : [];
-
+    // 🧮 Total price calculation
     const customTotal =
-      flights.reduce((s, f) => s + (f.price || 0), 0) +
-      hotels.reduce((s, h) => s + (h.price_per_night || 0), 0) +
-      entertainments.reduce((s, e) => s + (e.price || 0), 0);
+      flights.reduce((sum, f) => sum + (f.price || 0), 0) +
+      hotels.reduce((sum, h) => sum + (h.price_per_night || 0), 0) +
+      entertainments.reduce((sum, e) => sum + (e.price || 0), 0);
 
     const totalPrice = isCustom ? customTotal : item.total_price || 0;
 
@@ -102,39 +90,26 @@ function ConfirmedBookings() {
         <p>Total Price: ${totalPrice}</p>
         <p>Booking Date: {new Date(item.createdAt).toLocaleDateString()}</p>
 
+        {!isCustom && item.tour_package && (
+          <div>
+            <h5>Tour Package Details</h5>
+            <p>Location: {item.tour_package.location}</p>
+            <p>Duration: {item.tour_package.duration}</p>
+            <p>Price: ${item.tour_package.price}</p>
+          </div>
+        )}
+
         {flights.length > 0 && (
           <div style={{ marginBottom: "10px" }}>
             <h5 style={{ marginBottom: "5px" }}>Flights:</h5>
             <ul style={{ listStyleType: "disc", paddingLeft: "20px" }}>
-              {flights.map((f) => {
-                // Calculate seat info from the booking data
-                const basePrice = f.price || 157;
-                const totalPrice = item.total_price || 0;
-                
-                // Try to get seat info directly, or calculate
-                const seatClass = item.flight_details?.seatClass || 'economy';
-                const qty = item.flight_details?.qty || 1;
-                
-                return (
-                  <li key={f._id} style={{ marginBottom: "15px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                      <img
-                        src={f.airline_logo || (item.flightMeta && item.flightMeta.airline_logo) || "/images/default.jpg"}
-                        alt="Airline"
-                        style={{ width: "50px", height: "50px", objectFit: "cover", borderRadius: "5px" }}
-                      />
-                      <div>
-                        <div style={{ fontWeight: "bold", fontSize: "16px" }}>
-                          {f.airline_name || (item.flightMeta && item.flightMeta.airline_name)} - {new Date(f.date || (item.flightMeta && item.flightMeta.date)).toLocaleDateString()}
-                        </div>
-                        <div>
-                          {qty} × {seatClass === "business" ? "Business" : "Economy"} Class(${totalPrice})
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
+              {flights.map((f) => (
+                <li key={f._id}>
+                  <strong>{f.airline_name}</strong> from{" "}
+                  <em>{f.from}</em> to <em>{f.to}</em> on{" "}
+                  {new Date(f.date).toLocaleDateString()} (Price: ${f.price})
+                </li>
+              ))}
             </ul>
           </div>
         )}
@@ -145,8 +120,7 @@ function ConfirmedBookings() {
             <ul style={{ listStyleType: "disc", paddingLeft: "20px" }}>
               {hotels.map((h) => (
                 <li key={h._id}>
-                  <strong>{h.hotel_name}</strong> in <em>{h.location}</em> ($
-                  {h.price_per_night}/night)
+                  <strong>{h.hotel_name}</strong> in <em>{h.location}</em> (Price per night: ${h.price_per_night})
                 </li>
               ))}
             </ul>
@@ -159,38 +133,39 @@ function ConfirmedBookings() {
             <ul style={{ listStyleType: "disc", paddingLeft: "20px" }}>
               {entertainments.map((e) => (
                 <li key={e._id}>
-                  <strong>{e.entertainmentName}</strong> in{" "}
-                  <em>{e.location}</em> (${e.price})
+                  <strong>{e.entertainmentName}</strong> in <em>{e.location}</em> (Price: ${e.price})
                 </li>
               ))}
             </ul>
           </div>
         )}
 
-        <button
-          onClick={() => handleDelete(item._id)}
-          style={{
-            backgroundColor: "red",
-            color: "white",
-            padding: "8px 12px",
-            border: "none",
-            cursor: "pointer",
-            borderRadius: "4px",
-          }}
-        >
-          Delete Booking
-        </button>
+        <div style={{ marginTop: "10px" }}>
+          <button
+            onClick={() => handleDelete(item._id)}
+            style={{
+              backgroundColor: "red",
+              color: "white",
+              padding: "8px 12px",
+              border: "none",
+              cursor: "pointer",
+              borderRadius: "4px",
+            }}
+          >
+            Delete Booking
+          </button>
+        </div>
       </div>
     );
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div>
       <h2>Your Confirmed Bookings</h2>
       {error ? (
         <p>{error}</p>
-      ) : confirmedBookings.length ? (
-        confirmedBookings.map(renderBookingItem)
+      ) : confirmedBookings.length > 0 ? (
+        confirmedBookings.map((booking) => renderBookingItem(booking))
       ) : (
         <p>No confirmed bookings yet.</p>
       )}

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom"; // <-- Added Link import
+import { useParams, Link, useNavigate } from "react-router-dom"; // <-- Added Link import
 import axios from "./axiosConfig";
 
 function HotelDetails() {
   const { id } = useParams();
   const [hotel, setHotel] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios.get(`/hotels/${id}`).then((res) => setHotel(res.data));
@@ -22,9 +23,12 @@ function HotelDetails() {
       <p><strong>Rooms Available:</strong> {hotel.rooms_available}</p>
       <p><strong>Amenities:</strong> {hotel.amenities.join(", ")}</p>
       <p><strong>Room Types:</strong> {hotel.room_types.join(", ")}</p>
-      <Link to="/customize-package">
-        <button style={{ marginBottom: '10px' }}>← Back to Customize</button>
-      </Link>
+      <button
+        onClick={() => navigate(-1)}
+        style={{ marginBottom: "10px", padding: "8px 15px", cursor: "pointer" }}
+      >
+        ← Go Back
+      </button>
     </div>
   );
 }

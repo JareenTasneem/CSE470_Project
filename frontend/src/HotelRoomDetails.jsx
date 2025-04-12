@@ -1,11 +1,12 @@
 // src/HotelRoomDetails.jsx
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "./axiosConfig";
 
 const HotelRoomDetails = () => {
   const { id } = useParams();
   const [hotel, setHotel] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios.get(`/hotels/${id}`).then((res) => setHotel(res.data));
@@ -52,18 +53,12 @@ const HotelRoomDetails = () => {
         Book Now
       </Link>
 
-        <Link
-          to="/hotels"
-          style={{
-            padding: "10px 20px",
-            backgroundColor: "#333",
-            color: "#fff",
-            textDecoration: "none",
-            borderRadius: "4px"
-          }}
-        >
-          ← Back to Hotel List
-        </Link>
+      <button
+        onClick={() => navigate(-1)}
+        style={{ marginBottom: "10px", padding: "8px 15px", cursor: "pointer" }}
+      >
+        ← Go Back
+      </button>
       </div>
     </div>
   );

@@ -7,26 +7,17 @@ const entertainmentSchema = new mongoose.Schema({
   price: Number,
   description: String,
   images: [String],
-  // Optionally, add a field to track availability:
-  isAvailable: { type: Boolean, default: true },
+  // booked: { type: Boolean, default: false }, // Optional: Could be used if you want to track bookings
 });
 
 // Static method to book entertainment
 entertainmentSchema.statics.bookEntertainment = async function (entertainmentId) {
   const entertainment = await this.findById(entertainmentId);
   if (!entertainment) throw new Error("Entertainment not found");
-  // Optionally mark it as booked:
-  entertainment.isAvailable = false;
-  await entertainment.save();
-  return entertainment;
-};
 
-// Add a static method to mark as available (restore)
-entertainmentSchema.statics.markAsAvailable = async function (entertainmentId) {
-  const entertainment = await this.findById(entertainmentId);
-  if (!entertainment) throw new Error("Entertainment not found");
-  // Mark it as available (restore)
-  entertainment.isAvailable = true;
+  // No check if it is booked, just allow booking
+  // Optionally update the 'booked' field if you want
+  // entertainment.booked = true; // If you want to mark it as booked
   await entertainment.save();
   return entertainment;
 };

@@ -1,7 +1,7 @@
 // src/FlightList.jsx
 import React, { useEffect, useState } from "react";
 import axios from "./axiosConfig";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const FlightList = () => {
   const [flights, setFlights] = useState([]);
@@ -11,6 +11,7 @@ const FlightList = () => {
   const [maxPrice, setMaxPrice] = useState("");
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     axios.get("/flights")
@@ -35,20 +36,21 @@ const FlightList = () => {
     <div style={{ padding: "30px", backgroundColor: "#f8f8f8", fontFamily: "Poppins, sans-serif" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
         <h1 style={{ margin: 0 }}>Browse Flights</h1>
-        <button
-          onClick={() => navigate("/confirmedBookings")}
-          style={{
-            padding: "10px 16px",
-            backgroundColor: "#6f42c1",
-            color: "#fff",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer",
-            fontWeight: "500"
-          }}
-        >
-          View Confirmed Bookings
-        </button>
+        <Link to="/myBookings" state={{ background: location }}>
+          <button
+            style={{
+              padding: "10px 16px",
+              backgroundColor: "#6f42c1",
+              color: "#fff",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontWeight: "500"
+            }}
+          >
+            View Confirmed Bookings
+          </button>
+        </Link>
       </div>
 
       {/* Filters */}
