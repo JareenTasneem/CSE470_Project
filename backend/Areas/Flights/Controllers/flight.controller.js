@@ -1,11 +1,14 @@
-// backend/Areas/Flights/Controllers/flight.controller.js
-
 const Flight = require("../Models/Flight");
 
-// GET a single flight by ID (based on MongoDB _id)
+// Helper function to escape user input for use in a regex
+const escapeRegex = (text) => {
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+};
+
+// GET a single flight by ID
 const getFlightById = async (req, res) => {
   try {
-    const flight = await Flight.findById(req.params.id); // make sure your route matches this
+    const flight = await Flight.findById(req.params.id);
     if (!flight) return res.status(404).json({ message: "Flight not found" });
     res.json(flight);
   } catch (err) {
@@ -24,10 +27,10 @@ const getAllFlights = async (req, res) => {
   }
 };
 
-// PUT to book a flight (decrement seat count)
+// PUT: Book a flight by decrementing available seats
 const bookFlight = async (req, res) => {
   try {
-    const flight = await Flight.findById(req.params.id);
+    const flight = await Flight.findById(req.params.flightId);
     if (!flight) return res.status(404).json({ message: "Flight not found" });
 
     if (flight.seats_available > 0) {
@@ -38,12 +41,34 @@ const bookFlight = async (req, res) => {
       res.status(400).json({ message: "No seats available!" });
     }
   } catch (err) {
+    console.error("Error booking flight:", err);
     res.status(500).json({ message: "Error booking flight.", error: err });
   }
 };
 
+// GET: Compare flights by destination (query parameter "destination")
+const compareFlights = async (req, res) => {
+  try {
+    console.log("compareFlights req.query:", req.query);
+    const { destination } = req.query;
+    if (!destination) {
+      return res.status(400).json({ message: "Please provide a destination query parameter" });
+    }
+    const safeDestination = escapeRegex(destination);
+    const regex = new RegExp(safeDestination, "i");
+    console.log("compareFlights using regex:", regex);
+    const flights = await Flight.find({ to: { $regex: regex } });
+    console.log("compareFlights found", flights.length, "flights");
+    res.status(200).json(flights);
+  } catch (err) {
+    console.error("Error comparing flights:", err);
+    res.status(500).json({ message: "Error comparing flights", error: err.message });
+  }
+};
+
 module.exports = {
-  getAllFlights,
   getFlightById,
+  getAllFlights,
   bookFlight,
+  compareFlights,
 };

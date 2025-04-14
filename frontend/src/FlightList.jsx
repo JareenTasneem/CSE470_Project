@@ -1,7 +1,7 @@
-// src/FlightList.jsx
 import React, { useEffect, useState } from "react";
 import axios from "./axiosConfig";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import CompareModal from "./CompareModal";
 
 const FlightList = () => {
   const [flights, setFlights] = useState([]);
@@ -9,6 +9,10 @@ const FlightList = () => {
   const [searchAirline, setSearchAirline] = useState("");
   const [searchDate, setSearchDate] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
+  const [compareFlight, setCompareFlight] = useState(null);
+  const [compareFlights, setCompareFlights] = useState([]);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,6 +35,22 @@ const FlightList = () => {
     (!searchDate || f.date.startsWith(searchDate)) &&
     (!maxPrice || f.price <= parseFloat(maxPrice))
   );
+
+  // This is the same handleCompare function you already had,
+  // but we will also pass it down to CompareModal so that, if
+  // you want, you can "re-Compare" from within the modal.
+  const handleCompare = (flight) => {
+    axios.get(`/flights/compare?destination=${encodeURIComponent(flight.to)}`)
+      .then((response) => {
+        setCompareFlight(flight);
+        setCompareFlights(response.data);
+        setIsCompareModalOpen(true);
+      })
+      .catch((err) => {
+        console.error("Error comparing flights:", err);
+        alert("Error comparing flights. Please try again.");
+      });
+  };
 
   return (
     <div style={{ padding: "30px", backgroundColor: "#f8f8f8", fontFamily: "Poppins, sans-serif" }}>
@@ -76,27 +96,38 @@ const FlightList = () => {
           style={{ padding: "10px", borderRadius: "4px", border: "1px solid #ccc", width: "180px" }}
         />
         <input
-        type="number"
-        step="any"
-        placeholder="Max Price ($)"
-        value={maxPrice}
-        onChange={(e) => setMaxPrice(e.target.value)}
-        style={{
+          type="number"
+          step="any"
+          placeholder="Max Price ($)"
+          value={maxPrice}
+          onChange={(e) => setMaxPrice(e.target.value)}
+          style={{
             padding: "10px",
             borderRadius: "4px",
             border: "1px solid #ccc",
             width: "160px",
             MozAppearance: "textfield"
-        }}
-        onWheel={(e) => e.target.blur()} // prevent scroll jump
+          }}
+          onWheel={(e) => e.target.blur()}
         />
-
       </div>
 
       {/* Flight Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px" }}>
+      <div style={{ 
+        display: "grid", 
+        gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", 
+        gap: "20px" 
+      }}>
         {filteredFlights.map((flight) => (
-          <div key={flight._id} style={{ background: "#fff", borderRadius: "8px", padding: "15px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
+          <div 
+            key={flight._id} 
+            style={{ 
+              background: "#fff", 
+              borderRadius: "8px", 
+              padding: "15px", 
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)" 
+            }}
+          >
             <img
               src={flight.airline_logo || "/images/default.jpg"}
               alt="Airline"
@@ -109,13 +140,14 @@ const FlightList = () => {
             <p><strong>Price:</strong> ${flight.price}</p>
             <p><strong>Seats Available:</strong> {flight.total_seats || "N/A"}</p>
             <div style={{ marginTop: "5px", fontSize: "0.9em", color: "#666" }}>
-              {flight.seat_types && flight.seat_types.map(seat => (
-                <p key={seat.type}>
-                  <span style={{ textTransform: "capitalize" }}>{seat.type}</span>: {seat.count} seats
-                </p>
-              ))}
+              {flight.seat_types &&
+                flight.seat_types.map(seat => (
+                  <p key={seat.type}>
+                    <span style={{ textTransform: "capitalize" }}>{seat.type}</span>: {seat.count} seats
+                  </p>
+                ))
+              }
             </div>
-
             {/* Buttons */}
             <div style={{ marginTop: "15px", display: "flex", gap: "10px", justifyContent: "center" }}>
               <Link
@@ -134,27 +166,56 @@ const FlightList = () => {
                 View Details
               </Link>
               <Link to={`/book-flight/${flight._id}`} style={{ flex: 1 }}>
-                <button style={{
+                <button 
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: "#28a745",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontWeight: "500",
+                    width: "100%"
+                  }}
+                >
+                  Book Now
+                </button>
+              </Link>
+              <button 
+                onClick={() => handleCompare(flight)}
+                style={{
                   padding: "10px 20px",
-                  backgroundColor: "#28a745",
-                  color: "#fff",
+                  backgroundColor: "#ffc107",
+                  color: "#000",
                   border: "none",
                   borderRadius: "4px",
                   cursor: "pointer",
                   fontWeight: "500",
                   width: "100%"
-                }}>
-                  Book Now
-                </button>
-              </Link>
+                }}
+              >
+                Compare
+              </button>
             </div>
           </div>
         ))}
       </div>
 
       {filteredFlights.length === 0 && (
-        <p style={{ textAlign: "center", marginTop: "30px", color: "#999" }}>No flights match your filters.</p>
+        <p style={{ textAlign: "center", marginTop: "30px", color: "#999" }}>
+          No flights match your filters.
+        </p>
       )}
+
+      {/* Updated CompareModal: now we pass onCompareItem={handleCompare} */}
+      <CompareModal
+        isOpen={isCompareModalOpen}
+        onClose={() => setIsCompareModalOpen(false)}
+        items={compareFlights}
+        currentItem={compareFlight}
+        type="flight"
+        onCompareItem={handleCompare}
+      />
     </div>
   );
 };
