@@ -160,7 +160,7 @@ const CompareModal = ({
                       <p><strong>Price:</strong> ${itemPrice}</p>
                       <p style={{ fontStyle: "italic", color: "#555" }}>{differenceText}</p>
 
-                      <div style={{ marginTop: "10px", display: "flex", gap: "10px", justifyContent: "center" }}>
+                      <div style={{ marginTop: "10px", display: "flex", gap: "10px", justifyContent: "center", width: "500px" , height: "40px", align: "center"}}>
                         <Link
                           to={`/flights/details/${item._id}`}
                           style={{
@@ -170,12 +170,14 @@ const CompareModal = ({
                             borderRadius: "4px",
                             textDecoration: "none",
                             fontWeight: "500",
-                            textAlign: "center"
+                            textAlign: "center",
+                            // width: "150px",
+                            // height: "40px",
                           }}
                         >
                           View Details
                         </Link>
-                        <Link to={`/book-flight/${item._id}`} style={{ flex: 1 }}>
+                        <Link to={`/book-flight/${item._id}`} >
                           <button
                             style={{
                               padding: "6px 12px",
@@ -185,7 +187,8 @@ const CompareModal = ({
                               borderRadius: "4px",
                               cursor: "pointer",
                               fontWeight: "500",
-                              width: "100%"
+                              width: "125px",
+                              height: "40px",
                             }}
                           >
                             Book Now
@@ -201,7 +204,9 @@ const CompareModal = ({
                               border: "none",
                               borderRadius: "4px",
                               cursor: "pointer",
-                              fontWeight: "500"
+                              fontWeight: "500",
+                              width: "125px",
+                              // height: "40px",
                             }}
                           >
                             Compare
