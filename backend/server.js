@@ -18,7 +18,7 @@ require("./Areas/TourPackages/Models/TourPackage");
 require("./Areas/Hotels/Models/Hotel");
 require("./Areas/Flights/Models/Flight");
 require("./Areas/Bookings/Models/Booking");
-require("./Areas/Payments/Models/Payment");
+require("./Areas/Payments/Models/Payment");          // ← payment model
 require("./Areas/Reviews/Models/Review");
 require("./Areas/Visa/Models/Visa");
 
@@ -30,7 +30,7 @@ const userRoutes = require("./Areas/Users/Routes/user.routes");
 app.use("/api/users", userRoutes);
 
 const flightRoutes = require("./Areas/Flights/Routes/flight.routes");
-app.use("/api/flights", flightRoutes);  // Use this only once
+app.use("/api/flights", flightRoutes);
 
 const hotelRoutes = require("./Areas/Hotels/Routes/hotel.routes");
 app.use("/api/hotels", hotelRoutes);
@@ -43,6 +43,14 @@ app.use("/api/customPackages", customPackagesRouter);
 
 const bookingRoutes = require("./Areas/Bookings/Routes/booking.routes");
 app.use("/api/bookings", bookingRoutes);
+
+// ← Add these two lines to mount your payments routes:
+const paymentRoutes = require("./Areas/Payments/Routes/payment.routes");
+app.use("/api/payments", paymentRoutes);
+
+
+
+
 
 app.get("/", (req, res) => {
   res.send("🌍 Travel Agency API is running!");

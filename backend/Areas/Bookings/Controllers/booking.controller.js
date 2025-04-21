@@ -226,6 +226,32 @@ exports.cancelBooking = async (req, res) => {
         await hotelDoc.save();
       }
     }
+    // after your other exports, e.g. exports.cancelBooking
+exports.getBookingById = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.bookingId)
+      .populate("flights")
+      .populate("hotels")
+      .populate("entertainments")
+      .populate("tour_package")
+      .populate({
+        path: "custom_package",
+        populate: [
+          { path: "flights" },
+          { path: "hotels" },
+          { path: "entertainments" }
+        ]
+      });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+    res.json(booking);
+  } catch (err) {
+    console.error("Error fetching booking by ID:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
     // for (let entertainmentId of booking.entertainments) {
     //   await Entertainment.markAsAvailable(entertainmentId);
@@ -420,6 +446,32 @@ exports.bookCustomPackageDirect = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+// <…> at the bottom, after your other exports:
+exports.getBookingById = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.bookingId)
+      .populate("flights")
+      .populate("hotels")
+      .populate("entertainments")
+      .populate("tour_package")
+      .populate({
+        path: "custom_package",
+        populate: [
+          { path: "flights" },
+          { path: "hotels" },
+          { path: "entertainments" },
+        ]
+      });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+    res.json(booking);
+  } catch (err) {
+    console.error("Error fetching booking by ID:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 
 
@@ -429,4 +481,5 @@ module.exports = {
   cancelBooking: exports.cancelBooking,
   bookFlightDirect: exports.bookFlightDirect,
   bookCustomPackageDirect: exports.bookCustomPackageDirect,
+  getBookingById: exports.getBookingById, // ✅ add this line
 };

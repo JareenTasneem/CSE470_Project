@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "./contexts/AuthContext";
 import axios from "./axiosConfig";
+import { useNavigate } from "react-router-dom";
+// import { toast } from "react-toastify"; //Added extra
+// import "react-toastify/dist/ReactToastify.css"; //Added extra
 
 function ConfirmedBookings() {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [confirmedBookings, setConfirmedBookings] = useState([]);
   const [error, setError] = useState(null);
 
@@ -153,6 +157,20 @@ function ConfirmedBookings() {
             }}
           >
             Delete Booking
+          </button>
+         <button
+           onClick={() => navigate(`/payment-options/${item._id}`)}
+            style={{
+              backgroundColor: "#0066ff",
+              color: "white",
+              padding: "8px 12px",
+              border: "none",
+              cursor: "pointer",
+              borderRadius: "4px",
+              marginLeft: "10px",
+            }}
+          >
+            Pay Now
           </button>
         </div>
       </div>

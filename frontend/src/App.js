@@ -1,6 +1,11 @@
 // src/App.js
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 
 // Pages/Components
 import TravelPack from "./TravelPack";
@@ -14,54 +19,83 @@ import BookPackage from "./BookPackage";
 import MyBookings from "./MyBookings";
 import MyBookingsModal from "./MyBookingsModal";
 
-import FlightDetails from "./FlightDetails";
-import HotelDetails from "./HotelDetails";
-import EntertainmentDetails from "./EntertainmentDetails";
-import ConfirmedBookings from "./ConfirmedBookings";
-import HotelList from "./HotelList";
-import HotelRoomDetails from "./HotelRoomDetails";
-import BookHotel from "./BookHotel";
 import FlightList from "./FlightList";
-import BookFlight from "./BookFlight"; // Add at the top
-
+import FlightDetails from "./FlightDetails";
+import HotelList from "./HotelList";
+import HotelDetails from "./HotelDetails";
+import HotelRoomDetails from "./HotelRoomDetails";
+import EntertainmentDetails from "./EntertainmentDetails";
+import BookHotel from "./BookHotel";
+import BookFlight from "./BookFlight";
 import BookCustomPackage from "./BookCustomPackage";
+
+// ** We keep ConfirmedBookings **
+import ConfirmedBookings from "./ConfirmedBookings";
+
+// New payment‑flow pages
+import PaymentOptions from "./PaymentOptions";
+import InstallmentPlan from "./InstallmentPlan";
+import InstallmentStatus from "./InstallmentStatus";
+import Invoice from "./Invoice";
 
 import { AuthProvider } from "./contexts/AuthContext";
 
-
 function AppRoutes() {
   const location = useLocation();
-  const state = location.state;
+  const background = location.state?.background;
 
   return (
     <>
-      {/* Normal page routes */}
-      <Routes location={state?.background || location}>
+      <Routes location={background || location}>
+        {/* ─── Main Pages ─── */}
         <Route path="/" element={<TravelPack />} />
         <Route path="/tourPackages" element={<TourPackagesList />} />
         <Route path="/tourPackages/:id" element={<TourPackageDetails />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/myPackages" element={<MyCustomPackages />} />
+
+        {/* ─── Custom Packages ─── */}
         <Route path="/customizePackage" element={<CustomizePackage />} />
         <Route path="/customize-package" element={<CustomizePackage />} />
+        <Route path="/myPackages" element={<MyCustomPackages />} />
         <Route path="/book-package/:id" element={<BookPackage />} />
+
+        {/* ─── My Bookings & Confirmed ─── */}
         <Route path="/myBookings" element={<MyBookings />} />
+        <Route
+          path="/confirmedBookings"
+          element={<ConfirmedBookings />}
+        />
+
+        {/* ─── Flights, Hotels, Entertainment ─── */}
+        <Route path="/flights" element={<FlightList />} />
         <Route path="/flight/:id" element={<FlightDetails />} />
-        <Route path="/hotel/:id" element={<HotelDetails />} />
-        <Route path="/entertainment/:id" element={<EntertainmentDetails />} />
-        <Route path="/confirmedBookings" element={<ConfirmedBookings />} />
         <Route path="/hotels" element={<HotelList />} />
+        <Route path="/hotel/:id" element={<HotelDetails />} />
         <Route path="/hotels/details/:id" element={<HotelRoomDetails />} />
         <Route path="/book-hotel/:id" element={<BookHotel />} />
-        <Route path="/flights" element={<FlightList />} />
-        <Route path="/flights/details/:id" element={<FlightDetails />} />
         <Route path="/book-flight/:id" element={<BookFlight />} />
         <Route path="/book-custom-package/:id" element={<BookCustomPackage />} />
+        <Route path="/entertainment/:id" element={<EntertainmentDetails />} />
+
+        {/* ─── Payment Flow ─── */}
+        <Route
+          path="/payment-options/:bookingId"
+          element={<PaymentOptions />}
+        />
+        <Route
+          path="/installment-plan/:bookingId"
+          element={<InstallmentPlan />}
+        />
+        <Route
+          path="/installment-status/:bookingId"
+          element={<InstallmentStatus />}
+        />
+        <Route path="/invoice/:paymentId" element={<Invoice />} />
       </Routes>
 
-      {/* Modal version of MyBookings (only if navigated with background) */}
-      {state?.background && (
+      {/* Modal overlay for MyBookings if navigated with a background */}
+      {background && (
         <Routes>
           <Route
             path="/myBookings"
@@ -75,7 +109,7 @@ function AppRoutes() {
   );
 }
 
-function App() {
+export default function App() {
   return (
     <AuthProvider>
       <Router>
@@ -84,5 +118,3 @@ function App() {
     </AuthProvider>
   );
 }
-
-export default App;

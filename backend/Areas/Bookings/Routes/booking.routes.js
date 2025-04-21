@@ -19,6 +19,7 @@ const {
   cancelBooking,
   bookFlightDirect,
   bookCustomPackageDirect,
+  getBookingById,
 } = require("../Controllers/booking.controller");
 
 /* ─────────────────── ROUTES ─────────────────── */
@@ -29,8 +30,14 @@ router.post("/", auth, createBooking);
 // 2 Direct flight booking
 router.post("/flight", auth, bookFlightDirect);
 
+
+
 // 3️ Get bookings for logged‑in user
 router.get("/user", auth, getUserBookings);
+
+// … above your DELETE route
+// GET a single booking by ID
+router.get("/:bookingId", auth, getBookingById);
 
 // 4️ Cancel booking
 router.delete("/:bookingId", auth, cancelBooking);
