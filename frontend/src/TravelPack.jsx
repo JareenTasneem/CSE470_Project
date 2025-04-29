@@ -70,7 +70,7 @@ const TravelPack = () => {
                 <ul>
                   <li>
                     <Link to="/" style={{ color: "white", textDecoration: "none" }}>
-                      Home
+                      Payment
                     </Link>
                   </li>
                   <li>

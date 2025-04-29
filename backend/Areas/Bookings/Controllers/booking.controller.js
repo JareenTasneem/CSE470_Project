@@ -346,7 +346,7 @@ exports.bookFlightDirect = async (req, res) => {
       flights: [flightId],
       name,
       email,
-      status: "Confirmed",
+      status: "Pending",
       total_price: totalPrice,
       flightMeta: {
         airline_name: flight.airline_name,
@@ -430,7 +430,7 @@ exports.bookCustomPackageDirect = async (req, res) => {
       numberOfPeople,
       startDate,
       endDate,
-      status: "Confirmed",
+      status: "Pending",
       hotels: customPackage.hotels.map((h) => h._id),
       flights: customPackage.flights.map((f) => f._id),
       entertainments: customPackage.entertainments.map((e) => e._id),

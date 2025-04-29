@@ -124,7 +124,7 @@ router.post("/bookPackage", auth, async (req, res) => {
       booking_id: uuidv4(), // Generate a unique booking ID
       user: userId,
       custom_package: packageId,
-      status: "Confirmed",
+      status: "Pending",
       total_price: customPackage.total_price, // Sum the prices for a total
     });
 

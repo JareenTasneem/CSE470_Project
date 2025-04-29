@@ -114,20 +114,34 @@ export default function PaymentOptions() {
       </div>
 
       <div style={{ textAlign: "center", marginTop: 30 }}>
-        <button
-          onClick={() => alert("Full‑payment coming soon!")}
-          style={{
-            backgroundColor: "#ffc107",
-            color: "#333",
-            padding: "10px 20px",
-            marginRight: 16,
-            border: "none",
-            borderRadius: 4,
-            cursor: "pointer",
-          }}
-        >
-          Pay Full Amount
-        </button>
+      <button
+        onClick={async () => {
+          try {
+            // ✅ Immediately confirm booking
+            await axios.post(`/payments/confirm-full-payment/${bookingId}`);
+
+            // ✅ Then open Stripe page
+            const res = await axios.post(`/payments/fullpayment/${bookingId}`);
+            window.open(res.data.url, "_blank");
+          } catch (err) {
+            console.error("Error initiating full payment:", err);
+            alert("Failed to process full payment. Try again.");
+          }
+        }}
+        style={{
+          backgroundColor: "#ffc107",
+          color: "#333",
+          padding: "10px 20px",
+          marginRight: 16,
+          border: "none",
+          borderRadius: 4,
+          cursor: "pointer",
+        }}
+      >
+        Pay Full Amount
+      </button>
+
+
         <button
           onClick={() => navigate(`/installment-plan/${bookingId}`)}
           style={{

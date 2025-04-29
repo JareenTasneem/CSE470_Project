@@ -40,6 +40,9 @@ import Invoice from "./Invoice";
 
 import { AuthProvider } from "./contexts/AuthContext";
 
+import PaymentSuccess from "./PaymentSuccess";
+import PaymentCancel from "./PaymentCancel";
+
 function AppRoutes() {
   const location = useLocation();
   const background = location.state?.background;
@@ -92,6 +95,8 @@ function AppRoutes() {
           element={<InstallmentStatus />}
         />
         <Route path="/invoice/:paymentId" element={<Invoice />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/payment-cancel" element={<PaymentCancel />} />
       </Routes>
 
       {/* Modal overlay for MyBookings if navigated with a background */}

@@ -136,3 +136,131 @@ exports.generateInvoice = async (req, res) => {
     return res.status(500).json({ message: "Server error generating invoice", error: err.message });
   }
 };
+
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+
+// Full Payment Session Controller
+exports.createFullPaymentSession = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const booking = await Booking.findById(bookingId).populate('tour_package hotelMeta custom_package');
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    let price = 0;
+    if (booking.custom_package) {
+      const flights = booking.custom_package.flights || [];
+      const hotels = booking.custom_package.hotels || [];
+      const enterts = booking.custom_package.entertainments || [];
+      price = 
+        flights.reduce((s, f) => s + (f.price || 0), 0) +
+        hotels.reduce((s, h) => s + (h.price_per_night || 0), 0) +
+        enterts.reduce((s, e) => s + (e.price || 0), 0);
+    } else {
+      price = booking.total_price || 0;
+    }
+
+    if (price <= 0) {
+      return res.status(400).json({ message: "Invalid price" });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Booking ${bookingId}`,
+          },
+          unit_amount: Math.round(price * 100),
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      success_url: `${process.env.CLIENT_URL}/payment-success`,
+      cancel_url: `${process.env.CLIENT_URL}/payment-cancel`,
+      metadata: { bookingId: bookingId },
+    });
+
+    return res.json({ url: session.url });
+  } catch (err) {
+    console.error("Error creating Stripe session:", err);
+    return res.status(500).json({ message: "Server error creating payment session", error: err.message });
+  }
+};
+
+exports.createInstallmentPaymentSession = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const payment = await Payment.findById(paymentId).populate('booking');
+
+    if (!payment || payment.status === "Paid") {
+      return res.status(404).json({ message: "Installment already paid or not found" });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Installment ${payment.installmentNumber} for Booking ${payment.booking._id}`,
+          },
+          unit_amount: Math.round(payment.amount * 100), // Stripe expects cents
+        },
+        quantity: 1,
+      }],
+      mode: 'payment',
+      success_url: `${process.env.CLIENT_URL}/payment-success`,
+      cancel_url: `${process.env.CLIENT_URL}/payment-cancel`,
+      metadata: { paymentId: paymentId }, // Very important to track which installment
+    });
+
+    return res.json({ url: session.url });
+  } catch (err) {
+    console.error("Error creating installment payment session:", err);
+    return res.status(500).json({ message: "Server error creating installment payment session" });
+  }
+};
+exports.confirmInstallmentPayment = async (req, res) => {
+  try {
+    const { paymentId } = req.body;   // ✅ expects { paymentId } in body
+    const payment = await Payment.findById(paymentId);
+
+    if (!payment) {
+      return res.status(404).json({ message: "Payment not found" });
+    }
+
+    payment.status = "Paid";  // ✅ forcibly mark it Paid
+    payment.paidAt = new Date();
+    await payment.save();
+
+    return res.json({ message: "Payment marked as Paid", payment });
+  } catch (err) {
+    console.error("Error confirming payment:", err);
+    return res.status(500).json({ message: "Server error confirming payment", error: err.message });
+  }
+};
+
+
+exports.confirmFullPayment = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.status !== "Confirmed") {
+      booking.status = "Confirmed";
+      await booking.save();
+    }
+
+    res.json({ message: "Booking confirmed successfully", booking });
+  } catch (error) {
+    console.error("Error confirming full payment:", error);
+    res.status(500).json({ message: "Server error confirming payment", error: error.message });
+  }
+};

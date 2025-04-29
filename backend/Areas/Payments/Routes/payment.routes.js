@@ -8,6 +8,10 @@ const {
   getInstallmentPlan,
   payInstallment,
   generateInvoice,
+  createFullPaymentSession,
+  createInstallmentPaymentSession,
+  confirmInstallmentPayment,
+  confirmFullPayment,
 } = require("../Controllers/payment.controller");
 
 // initialize (or return) the 3‑payment plan for a booking
@@ -21,5 +25,13 @@ router.post("/pay/:paymentId", auth, payInstallment);
 
 // download invoice PDF
 router.get("/invoice/:paymentId", auth, generateInvoice);
+
+router.post("/fullpayment/:bookingId", auth, createFullPaymentSession);
+
+router.post("/installment-payment/:paymentId", auth, createInstallmentPaymentSession);
+
+router.post("/confirm-installment-payment", auth, confirmInstallmentPayment);
+
+router.post("/confirm-full-payment/:bookingId", auth, confirmFullPayment);
 
 module.exports = router;
