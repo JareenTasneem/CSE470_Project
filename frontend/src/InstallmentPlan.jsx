@@ -3,6 +3,9 @@ import { useParams } from "react-router-dom";
 import { AuthContext } from "./contexts/AuthContext";
 import axios from "./axiosConfig";
 
+/* 1️⃣ backend base */
+const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+
 export default function InstallmentPlan() {
   const { bookingId } = useParams();
   const { user } = useContext(AuthContext);
@@ -12,78 +15,47 @@ export default function InstallmentPlan() {
   const [error, setError] = useState("");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
+  /* load (or create) plan */
   useEffect(() => {
     if (!user) return;
-
-    const loadPlan = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.post(`/payments/create/${bookingId}`);
-        setPlan(res.data);
-      } catch (err) {
-        console.error("Error loading or creating plan:", err);
+    setLoading(true);
+    axios
+      .post(`/payments/create/${bookingId}`)
+      .then((res) => setPlan(res.data))
+      .catch((err) => {
+        console.error("Error loading plan:", err);
         setError("Unable to load payment plan.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadPlan();
+      })
+      .finally(() => setLoading(false));
   }, [bookingId, user]);
 
+  /* pay one installment */
   const handlePay = async (paymentId) => {
     try {
-      // 1️⃣ Open Stripe checkout page
-      const res = await axios.post(`/payments/installment-payment/${paymentId}`, {}, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-  
-      const stripeWindow = window.open(res.data.url, "_blank");
-  
-      if (!stripeWindow) {
-        alert("❌ Failed to open payment page. Please allow popups!");
-        return;
-      }
-  
-      // 2️⃣ Immediately mark payment as Paid in DB
-      await axios.post(`/payments/pay/${paymentId}`, {}, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-  
-      // 3️⃣ Update frontend UI
-      setPlan(prevPlan => {
-        const updatedPlan = prevPlan.map(inst =>
-          inst._id === paymentId ? { ...inst, status: "Paid" } : inst
-        );
-  
-        const allPaid = updatedPlan.every(inst => inst.status === "Paid");
-  
-        if (allPaid) {
-          axios.post(`/payments/confirm-full-payment/${bookingId}`, {}, {
-            headers: { Authorization: `Bearer ${user.token}` }
-          }).then(() => {
-            console.log("✅ Booking confirmed after all installments paid.");
-          }).catch(err => {
-            console.error("❌ Error confirming booking:", err);
-          });
+      const { data } = await axios.post(`/payments/installment-payment/${paymentId}`);
+      const w = window.open(data.url, "_blank");
+      if (!w) { alert("Pop-up blocked!"); return; }
+
+      await axios.post(`/payments/pay/${paymentId}`);
+
+      setPlan((prev) => {
+        const upd = prev.map((p) => p._id === paymentId ? { ...p, status: "Paid" } : p);
+        if (upd.every((p) => p.status === "Paid")) {
+          axios.post(`/payments/confirm-full-payment/${bookingId}`);
         }
-  
-        return updatedPlan;
+        return upd;
       });
-  
+
       setPaymentSuccess(true);
       setTimeout(() => setPaymentSuccess(false), 4000);
     } catch (err) {
       console.error("Payment error:", err);
-      alert("Payment failed. Try again.");
+      alert("Payment failed.");
     }
   };
-  
-  
-  
 
   if (loading) return <p>Loading…</p>;
-  if (error) return <p>{error}</p>;
+  if (error)   return <p>{error}</p>;
 
   return (
     <div>
@@ -91,10 +63,10 @@ export default function InstallmentPlan() {
         <div style={{
           backgroundColor: "#d4edda",
           color: "#155724",
-          padding: "10px",
-          borderRadius: "6px",
-          marginBottom: "16px",
-          border: "1px solid #c3e6cb"
+          padding: 10,
+          borderRadius: 6,
+          marginBottom: 16,
+          border: "1px solid #c3e6cb",
         }}>
           ✅ Payment Successful!
         </div>
@@ -106,10 +78,9 @@ export default function InstallmentPlan() {
         <div key={inst._id} style={{ marginBottom: 12 }}>
           <strong>#{inst.installmentNumber}</strong>{" "}
           ${inst.amount.toFixed(2)} — {inst.status}
-
           {inst.status === "Paid" && (
             <a
-              href={`/api/payments/invoice/${inst._id}`}
+              href={`${API_BASE}/payments/invoice/installment/${inst._id}`}
               target="_blank"
               rel="noopener noreferrer"
               style={{
@@ -124,7 +95,6 @@ export default function InstallmentPlan() {
               Download Invoice
             </a>
           )}
-
           {inst.status === "Unpaid" && (
             <button
               onClick={() => handlePay(inst._id)}

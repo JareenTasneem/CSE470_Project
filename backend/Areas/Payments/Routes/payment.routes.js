@@ -1,37 +1,42 @@
 // backend/Areas/Payments/Routes/payment.routes.js
 const express = require("express");
-const router = express.Router();
-const auth = require("../../../middlewares/auth");
+const router  = express.Router();
+const auth    = require("../../../middlewares/auth");
 
 const {
   createInstallmentPlan,
   getInstallmentPlan,
   payInstallment,
-  generateInvoice,
+
+  /* invoice handlers */
+  generateInstallmentInvoice,
+  generateBookingInvoice,
+
   createFullPaymentSession,
   createInstallmentPaymentSession,
   confirmInstallmentPayment,
   confirmFullPayment,
 } = require("../Controllers/payment.controller");
 
-// initialize (or return) the 3‑payment plan for a booking
+/* ──────────────────────────────────────────────
+   INSTALLMENT PLAN
+────────────────────────────────────────────── */
 router.post("/create/:bookingId", auth, createInstallmentPlan);
+router.get ("/plan/:bookingId",   auth, getInstallmentPlan);
+router.post("/pay/:paymentId",    auth, payInstallment);
 
-// get the plan & statuses
-router.get("/plan/:bookingId", auth, getInstallmentPlan);
+/* ──────────────────────────────────────────────
+   INVOICE DOWNLOADS  ❱ now PUBLIC (no auth)
+────────────────────────────────────────────── */
+router.get("/invoice/installment/:paymentId", generateInstallmentInvoice);
+router.get("/invoice/booking/:bookingId",     generateBookingInvoice);
 
-// pay one installment
-router.post("/pay/:paymentId", auth, payInstallment);
-
-// download invoice PDF
-router.get("/invoice/:paymentId", auth, generateInvoice);
-
-router.post("/fullpayment/:bookingId", auth, createFullPaymentSession);
-
-router.post("/installment-payment/:paymentId", auth, createInstallmentPaymentSession);
-
-router.post("/confirm-installment-payment", auth, confirmInstallmentPayment);
-
-router.post("/confirm-full-payment/:bookingId", auth, confirmFullPayment);
+/* ──────────────────────────────────────────────
+   STRIPE SESSIONS & CONFIRMATIONS
+────────────────────────────────────────────── */
+router.post("/fullpayment/:bookingId",           auth, createFullPaymentSession);
+router.post("/installment-payment/:paymentId",   auth, createInstallmentPaymentSession);
+router.post("/confirm-installment-payment",      auth, confirmInstallmentPayment);
+router.post("/confirm-full-payment/:bookingId",  auth, confirmFullPayment);
 
 module.exports = router;
