@@ -120,7 +120,17 @@ function BookPackage() {
             style={{ width: "100%", padding: "5px" }}
           />
         </div>
-        <button type="submit" style={{ marginTop: "15px", padding: "10px 20px" }}>
+        <button type="submit" style={{
+          marginTop: "15px",
+          padding: "10px 20px",
+          backgroundColor: "#28a745",
+          color: "#fff",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+          fontWeight: "500",
+          width: "100%"
+        }}>
           Confirm Booking
         </button>
       </form>

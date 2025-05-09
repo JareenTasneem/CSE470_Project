@@ -3,8 +3,7 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "./axiosConfig";
 import "./styles/style.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { Link } from "react-router-dom";
-// Import the AuthContext to access the logged-in user info
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "./contexts/AuthContext";
 
 const TravelPack = () => {
@@ -14,7 +13,6 @@ const TravelPack = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch tour packages
     axios
       .get("http://localhost:5000/api/tourPackages")
       .then((response) => setPackages(response.data))
@@ -30,10 +28,53 @@ const TravelPack = () => {
             {user ? (
               <>
                 <li>
-                  <span>{user.name}</span>
+                  <span
+                    style={{ cursor: "pointer", fontWeight: 600, color: "#007bff", background: "#181818", borderRadius: 20, padding: "6px 18px", marginRight: 10, display: "inline-block" }}
+                    onClick={() => navigate("/profilecustomization")}
+                  >
+                    {user.name}
+                  </span>
                 </li>
                 <li>
-                  <button onClick={logout} style={{ background: '#181818', color: '#fff', borderRadius: 8, padding: '6px 14px', fontWeight: 500, fontSize: '15px', minWidth: 0, minHeight: 0, lineHeight: 1.2 }}>Logout</button>
+                  <button
+                    onClick={() => navigate("/confirmedBookings")}
+                    style={{
+                      background: "#181818",
+                      color: "#fff",
+                      borderRadius: 20,
+                      padding: "6px 18px",
+                      fontWeight: 500,
+                      fontSize: "15px",
+                      minWidth: 0,
+                      minHeight: 0,
+                      lineHeight: 1.2,
+                      border: "none",
+                      marginRight: 10,
+                      cursor: "pointer"
+                    }}
+                  >
+                    Confirmed Bookings
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={logout}
+                    style={{
+                      background: "#181818",
+                      color: "#fff",
+                      borderRadius: 20,
+                      padding: "6px 18px",
+                      fontWeight: 500,
+                      fontSize: "15px",
+                      minWidth: 0,
+                      minHeight: 0,
+                      lineHeight: 1.2,
+                      border: "none",
+                      cursor: "pointer"
+                    }}
+                  >
+                    Logout
+                  </button>
                 </li>
               </>
             ) : (
@@ -95,18 +136,33 @@ const TravelPack = () => {
                     </Link>
                   </li>
                   <li>
-                    <button 
-                      onClick={handleReviewClick}
-                      style={{ 
-                        color: "white", 
+                    <button
+                      onClick={() => navigate("/my-history")}
+                      style={{
+                        color: "white",
                         textDecoration: "none",
                         background: "none",
                         border: "none",
                         cursor: "pointer",
-                        padding: 0
+                        padding: 0,
                       }}
                     >
                       Reviews
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => navigate("/confirmedBookings")}
+                      style={{
+                        color: "white",
+                        textDecoration: "none",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                      }}
+                    >
+                      Confirmed Bookings
                     </button>
                   </li>
                 </ul>
@@ -142,11 +198,7 @@ const TravelPack = () => {
             <div className="card" key={pkg._id} style={{ width: "300px" }}>
               <div className="img_text">
                 <img
-                  src={
-                    pkg.images && pkg.images.length > 0
-                      ? pkg.images[0]
-                      : "/images/temp4.jpeg"
-                  }
+                  src={pkg.images && pkg.images.length > 0 ? pkg.images[0] : "/images/temp4.jpeg"}
                   alt="Tour"
                   style={{ width: "100%", height: "150px", objectFit: "cover" }}
                 />
@@ -165,39 +217,50 @@ const TravelPack = () => {
                   </div>
                   <h3>{pkg.package_title}</h3>
                   <p>{pkg.package_details}</p>
-                  <div className="info_price" style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
+                  <div
+                    className="info_price"
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                      justifyContent: "center",
+                      marginTop: "10px",
+                    }}
+                  >
                     <button
                       style={{
-                        padding: '10px 20px',
-                        backgroundColor: '#007bff',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontWeight: '500',
-                        width: '100%'
+                        padding: "10px 20px",
+                        backgroundColor: "#007bff",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontWeight: "500",
+                        width: "100%",
                       }}
-                      onClick={() => {/* TODO: Implement view more logic, e.g., open modal or navigate to details */}}
+                      onClick={() => {
+                        // You can implement modal or routing here
+                        alert("View More clicked for: " + pkg.package_title);
+                      }}
                     >
                       View More
                     </button>
                     <Link to={`/book-package/${pkg._id}`} style={{ flex: 1 }}>
                       <button
                         style={{
-                          padding: '10px 20px',
-                          backgroundColor: '#28a745',
-                          color: '#fff',
-                          border: 'none',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          fontWeight: '500',
-                          width: '100%'
+                          padding: "10px 20px",
+                          backgroundColor: "#28a745",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          fontWeight: "500",
+                          width: "100%",
                         }}
                       >
                         Book Now
                       </button>
                     </Link>
-                    <h4 style={{ flex: 1, textAlign: 'center', margin: 0 }}>${pkg.price}</h4>
+                    <h4 style={{ flex: 1, textAlign: "center", margin: 0 }}>${pkg.price}</h4>
                   </div>
                 </div>
               </div>

@@ -49,16 +49,8 @@ app.use("/api/bookings", bookingRoutes);
 const paymentRoutes = require("./Areas/Payments/Routes/payment.routes");
 app.use("/api/payments", paymentRoutes);
 
-<<<<<<< HEAD
 const reviewRoutes = require("./Areas/Reviews/Routes/reviewRoutes");
 app.use("/api/reviews", reviewRoutes);
-=======
-app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads', 'profile')));
-
-
-
-
->>>>>>> 68c824b2b7e4564c95045d2f4d64b41a5a3f5469
 
 app.get("/", (req, res) => {
   res.send("🌍 Travel Agency API is running!");
