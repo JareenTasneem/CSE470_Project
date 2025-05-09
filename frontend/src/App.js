@@ -18,6 +18,8 @@ import MyCustomPackages from "./MyCustomPackages";
 import BookPackage from "./BookPackage";
 import MyBookings from "./MyBookings";
 import MyBookingsModal from "./MyBookingsModal";
+import MyHistory from "./MyHistory";
+import WriteReview from "./WriteReview";
 
 import FlightList from "./FlightList";
 import FlightDetails from "./FlightDetails";
@@ -65,10 +67,9 @@ function AppRoutes() {
 
         {/* ─── My Bookings & Confirmed ─── */}
         <Route path="/myBookings" element={<MyBookings />} />
-        <Route
-          path="/confirmedBookings"
-          element={<ConfirmedBookings />}
-        />
+        <Route path="/confirmedBookings" element={<ConfirmedBookings />} />
+        <Route path="/my-history" element={<MyHistory />} />
+        <Route path="/write-review" element={<WriteReview />} />
 
         {/* ─── Flights, Hotels, Entertainment ─── */}
         <Route path="/flights" element={<FlightList />} />

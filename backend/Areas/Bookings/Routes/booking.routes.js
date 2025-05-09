@@ -30,17 +30,49 @@ router.post("/", auth, createBooking);
 // 2 Direct flight booking
 router.post("/flight", auth, bookFlightDirect);
 
-
-
 // 3️ Get bookings for logged‑in user
 router.get("/user", auth, getUserBookings);
 
-// … above your DELETE route
 // GET a single booking by ID
 router.get("/:bookingId", auth, getBookingById);
 
 // 4️ Cancel booking
 router.delete("/:bookingId", auth, cancelBooking);
+
+// Update booking status
+router.patch("/:bookingId/status", auth, async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { status } = req.body;
+    const userId = req.user.userId;
+
+    // Find the booking and verify ownership
+    const booking = await Booking.findOne({ _id: bookingId, user: userId });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found or unauthorized" });
+    }
+
+    // Only allow status change from Pending to Confirmed
+    if (booking.status !== "Pending" || status !== "Confirmed") {
+      return res.status(400).json({ 
+        message: "Invalid status change. Only pending bookings can be confirmed." 
+      });
+    }
+
+    // Update the status
+    booking.status = status;
+    await booking.save();
+
+    res.json({ 
+      message: "Booking status updated successfully",
+      booking 
+    });
+  } catch (error) {
+    console.error("Error updating booking status:", error);
+    res.status(500).json({ message: "Failed to update booking status" });
+  }
+});
 
 // 5️ Quick seat/room helpers (unchanged)
 router.post("/bookFlight", async (req, res) => {
@@ -76,7 +108,6 @@ router.post('/bookEntertainment', async (req, res) => {
 });
 
 router.post("/bookCustomPackageDirect", auth, bookCustomPackageDirect);
-
 
 // 6️⃣ Book full custom package (unchanged)
 router.post("/bookPackage", auth, async (req, res) => {

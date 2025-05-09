@@ -25,6 +25,16 @@ function BookPackage() {
     }
   }, [user, navigate]);
 
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.name || "",
+        email: user.email || "",
+      }));
+    }
+  }, [user]);
+
   // Optionally, render nothing while redirecting
   if (!user) {
     return null;
@@ -62,6 +72,7 @@ function BookPackage() {
             onChange={handleChange}
             required
             style={{ width: "100%", padding: "5px" }}
+            disabled
           />
         </div>
         <div>
@@ -96,6 +107,7 @@ function BookPackage() {
             onChange={handleChange}
             required
             style={{ width: "100%", padding: "5px" }}
+            disabled
           />
         </div>
         <div>

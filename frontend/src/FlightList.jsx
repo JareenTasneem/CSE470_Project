@@ -54,27 +54,8 @@ const FlightList = () => {
 
   return (
     <div style={{ padding: "30px", backgroundColor: "#f8f8f8", fontFamily: "Poppins, sans-serif" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-        <h1 style={{ margin: 0 }}>Browse Flights</h1>
-        <Link to="/myBookings" state={{ background: location }}>
-          <button
-            style={{
-              padding: "10px 16px",
-              backgroundColor: "#6f42c1",
-              color: "#fff",
-              border: "none",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontWeight: "500"
-            }}
-          >
-            View Confirmed Bookings
-          </button>
-        </Link>
-      </div>
-
-      {/* Filters */}
-      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "center", marginBottom: "20px" }}>
+      <h1 style={{ textAlign: "center", marginBottom: "30px" }}>Browse Flights</h1>
+      <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginBottom: "20px" }}>
         <input
           type="text"
           placeholder="Destination"
@@ -110,6 +91,23 @@ const FlightList = () => {
           }}
           onWheel={(e) => e.target.blur()}
         />
+      </div>
+      <div style={{ textAlign: "center", margin: "20px 0" }}>
+        <Link to="/confirmedBookings">
+          <button
+            style={{
+              padding: "10px 16px",
+              backgroundColor: "#000000",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontWeight: "500"
+            }}
+          >
+            View Confirmed Bookings
+          </button>
+        </Link>
       </div>
 
       {/* Flight Cards */}
@@ -149,21 +147,22 @@ const FlightList = () => {
               }
             </div>
             {/* Buttons */}
-            <div style={{ marginTop: "15px", display: "flex", gap: "10px", justifyContent: "center" }}>
-              <Link
-                to={`/flights/details/${flight._id}`}
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "#007bff",
-                  color: "#fff",
-                  borderRadius: "4px",
-                  textDecoration: "none",
-                  fontWeight: "500",
-                  flex: 1,
-                  textAlign: "center"
-                }}
-              >
-                View Details
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "15px" }}>
+              <Link to={`/flights/details/${flight._id}`} style={{ flex: 1 }}>
+                <button
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: "#007bff",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontWeight: "500",
+                    width: "100%"
+                  }}
+                >
+                  View Details
+                </button>
               </Link>
               <Link to={`/book-flight/${flight._id}`} style={{ flex: 1 }}>
                 <button 

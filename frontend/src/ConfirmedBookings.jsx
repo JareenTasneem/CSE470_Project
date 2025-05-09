@@ -10,6 +10,20 @@ function ConfirmedBookings() {
   const navigate = useNavigate();
   const [confirmedBookings, setConfirmedBookings] = useState([]);
   const [error, setError] = useState(null);
+  const [reviewedIds, setReviewedIds] = useState([]);
+
+  useEffect(() => {
+    if (user) {
+      axios
+        .get('/reviews/my-reviews', {
+          headers: { Authorization: `Bearer ${user.token}` },
+        })
+        .then((res) =>
+          setReviewedIds(res.data.map((rv) => rv.bookingId)) // ← we added bookingId in the API
+        )
+        .catch(() => {});
+    }
+  }, [user]);
 
   // ✅ fetch bookings
   useEffect(() => {
@@ -47,7 +61,6 @@ function ConfirmedBookings() {
         alert("Failed to delete booking.");
       });
   };
-
 
   // ✅ render single booking
   const renderBookingItem = (item) => {
@@ -158,8 +171,30 @@ function ConfirmedBookings() {
           >
             Delete Booking
           </button>
-         <button
-           onClick={() => navigate(`/payment-options/${item._id}`)}
+          <button
+            onClick={() => navigate(`/write-review?bookingId=${item._id}`)}
+            style={{
+              backgroundColor: "#ffc107",
+              color: "#000000",
+              padding: "8px 12px",
+              border: "none",
+              cursor: "pointer",
+              borderRadius: "4px",
+              marginLeft: "10px",
+            }}
+          >
+            Write Review
+          </button>
+          <button
+            onClick={() => {
+              if (!item._id) {
+                console.error('Booking ID missing for Pay Now:', item);
+                alert('Booking ID missing. Please try again.');
+                return;
+              }
+              console.log('Navigating to payment options for booking:', item._id);
+              navigate(`/payment-options/${item._id}`);
+            }}
             style={{
               backgroundColor: "#0066ff",
               color: "white",

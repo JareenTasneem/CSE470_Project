@@ -3,7 +3,7 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "./axiosConfig";
 import "./styles/style.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 // Import the AuthContext to access the logged-in user info
 import { AuthContext } from "./contexts/AuthContext";
 
@@ -12,6 +12,7 @@ const TravelPack = () => {
   
   // Access the user and logout function from AuthContext
   const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -19,6 +20,14 @@ const TravelPack = () => {
       .then((response) => setPackages(response.data))
       .catch((err) => console.error("Error fetching packages:", err));
   }, []);
+
+  const handleReviewClick = () => {
+    if (!user) {
+      navigate('/login', { state: { from: '/my-history' } });
+    } else {
+      navigate('/my-history');
+    }
+  };
 
   return (
     <div>
@@ -29,10 +38,17 @@ const TravelPack = () => {
             {user ? (
               <>
                 <li>
-                  <span>{user.name}</span>
+                  <Link to="/confirmedBookings" style={{ textDecoration: "none", color: "inherit", marginRight: 16 }}>
+                    <button style={{ background: '#000', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 500, fontSize: '15px', cursor: 'pointer', minWidth: 0, minHeight: 0, lineHeight: 1.2 }}>
+                      Confirmed Bookings
+                    </button>
+                  </Link>
                 </li>
                 <li>
-                  <button onClick={logout}>Logout</button>
+                  <span style={{ background: '#181818', color: '#fff', borderRadius: 8, padding: '6px 14px', fontWeight: 500, fontSize: '15px', marginRight: 8, display: 'inline-block', minWidth: 0, minHeight: 0, lineHeight: 1.2 }}>{user.name}</span>
+                </li>
+                <li>
+                  <button onClick={logout} style={{ background: '#181818', color: '#fff', borderRadius: 8, padding: '6px 14px', fontWeight: 500, fontSize: '15px', minWidth: 0, minHeight: 0, lineHeight: 1.2 }}>Logout</button>
                 </li>
               </>
             ) : (
@@ -93,6 +109,21 @@ const TravelPack = () => {
                       Customize-Package
                     </Link>
                   </li>
+                  <li>
+                    <button 
+                      onClick={handleReviewClick}
+                      style={{ 
+                        color: "white", 
+                        textDecoration: "none",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0
+                      }}
+                    >
+                      Reviews
+                    </button>
+                  </li>
                 </ul>
               </nav>
               <div className="cards">
@@ -149,9 +180,39 @@ const TravelPack = () => {
                   </div>
                   <h3>{pkg.package_title}</h3>
                   <p>{pkg.package_details}</p>
-                  <div className="info_price">
-                    <a href="#">More Info</a>
-                    <h4>${pkg.price}</h4>
+                  <div className="info_price" style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '10px' }}>
+                    <button
+                      style={{
+                        padding: '10px 20px',
+                        backgroundColor: '#007bff',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: '500',
+                        width: '100%'
+                      }}
+                      onClick={() => {/* TODO: Implement view more logic, e.g., open modal or navigate to details */}}
+                    >
+                      View More
+                    </button>
+                    <Link to={`/book-package/${pkg._id}`} style={{ flex: 1 }}>
+                      <button
+                        style={{
+                          padding: '10px 20px',
+                          backgroundColor: '#28a745',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontWeight: '500',
+                          width: '100%'
+                        }}
+                      >
+                        Book Now
+                      </button>
+                    </Link>
+                    <h4 style={{ flex: 1, textAlign: 'center', margin: 0 }}>${pkg.price}</h4>
                   </div>
                 </div>
               </div>

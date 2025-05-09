@@ -307,39 +307,25 @@ function CustomizePackage() {
 
   // ---------- MAIN RENDER ----------
   return (
-    <div style={{ fontFamily: "Poppins, sans-serif", minHeight: "100vh", background: "#fafafa" }}>
-      {/* ========== HEADER ========== */}
-      <header style={{ background: "#333", color: "#fff", padding: "5px 10px", maxHeight: "50px", width: "100%" }}>
-        <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "10px" }}>
-          <h3 style={{ margin: 0 }}>Customize Package</h3>
-          <ul style={{ display: "flex", gap: "15px", listStyle: "none", margin: 0, padding: 0 }}>
-            {user ? (
-              <>
-                <li>{user.name}</li>
-                <li>
-                  <button onClick={logout} style={{ cursor: "pointer" }}>
-                    Logout
-                  </button>
-                </li>
-              </>
-            ) : (
-              <>
-                <li>
-                  <Link to="/login" style={{ color: "#fff", textDecoration: "none" }}>
-                    Login
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/signup" style={{ color: "#fff", textDecoration: "none" }}>
-                    Sign up
-                  </Link>
-                </li>
-              </>
-            )}
-          </ul>
-        </nav>
-      </header>
-
+    <div style={{ padding: "30px", backgroundColor: "#f8f8f8", fontFamily: "Poppins, sans-serif" }}>
+      <h1 style={{ textAlign: "center", marginBottom: "30px" }}>Customize Your Package</h1>
+      <div style={{ textAlign: "center", margin: "20px 0" }}>
+        <Link to="/confirmedBookings">
+          <button
+            style={{
+              padding: "10px 16px",
+              backgroundColor: "#000000",
+              color: "#ffffff",
+              border: "none",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontWeight: "500"
+            }}
+          >
+            View Confirmed Bookings
+          </button>
+        </Link>
+      </div>
       {/* ========== BODY LAYOUT ========== */}
       <div style={{ display: "flex" }}>
         {/* LEFT PANEL: FILTERS & BOOKED ITEMS */}

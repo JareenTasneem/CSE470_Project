@@ -84,15 +84,16 @@ function HotelList() {
         </select>
       </div>
       <div style={{ textAlign: "center", margin: "20px 0" }}>
-        <Link to="/myBookings" state={{ background: location }}>
+        <Link to="/confirmedBookings">
           <button
             style={{
-              background: "#6c63ff",
-              color: "#fff",
-              padding: "10px 20px",
+              padding: "10px 16px",
+              backgroundColor: "#000000",
+              color: "#ffffff",
               border: "none",
-              borderRadius: "4px",
+              borderRadius: "6px",
               cursor: "pointer",
+              fontWeight: "500"
             }}
           >
             View Confirmed Bookings
@@ -123,19 +124,50 @@ function HotelList() {
             <p><strong>Location:</strong> {hotel.location}</p>
             <p><strong>Price/Night:</strong> ${hotel.price_per_night}</p>
             <p><strong>Stars:</strong> {hotel.star_rating || "N/A"}★</p>
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
-              <Link to={`/hotels/details/${hotel._id}`} style={{ textDecoration: "none", color: "#007bff" }}>
-                View Details
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "10px" }}>
+              <Link to={`/hotels/details/${hotel._id}`} style={{ flex: 1 }}>
+                <button
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: "#007bff",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontWeight: "500",
+                    width: "100%"
+                  }}
+                >
+                  View Details
+                </button>
+              </Link>
+              <Link to={`/book-hotel/${hotel._id}`} style={{ flex: 1 }}>
+                <button 
+                  style={{
+                    padding: "10px 20px",
+                    backgroundColor: "#28a745",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontWeight: "500",
+                    width: "100%"
+                  }}
+                >
+                  Book Now
+                </button>
               </Link>
               <button 
                 onClick={() => handleCompare(hotel)}
                 style={{
-                  padding: "6px 12px",
+                  padding: "10px 20px",
                   backgroundColor: "#ffc107",
                   color: "#000",
                   border: "none",
                   borderRadius: "4px",
                   cursor: "pointer",
+                  fontWeight: "500",
+                  width: "100%"
                 }}
               >
                 Compare

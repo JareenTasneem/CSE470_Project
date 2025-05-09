@@ -126,25 +126,23 @@ function TourPackagesList() {
       </div>
 
       {/* Button to open modal for booked packages */}
-      <div style={{ textAlign: "center", marginBottom: "20px" }}>
-        {user && (
+      <div style={{ textAlign: "center", margin: "20px 0" }}>
+        <Link to="/confirmedBookings">
           <button
-            onClick={() => setIsModalOpen(true)}
             style={{
-              padding: "10px 20px",
-              backgroundColor: "#333",
-              color: "#fff",
+              padding: "10px 16px",
+              backgroundColor: "#000000",
+              color: "#ffffff",
               border: "none",
-              borderRadius: "4px",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontWeight: "500"
             }}
           >
-            View My Booked Packages
+            View Confirmed Bookings
           </button>
-        )}
+        </Link>
       </div>
-
-      {/* Render the modal if isModalOpen is true */}
-      {isModalOpen && <MyBookingsModal onClose={() => setIsModalOpen(false)} />}
 
       {/* Packages Grid */}
       <div
@@ -198,18 +196,38 @@ function TourPackagesList() {
               <p style={{ margin: "5px 0", color: "#666" }}>
                 <strong>Availability:</strong> {pkg.availability}
               </p>
-              <div style={{ textAlign: "center", marginTop: "15px" }}>
-                <Link
-                  to={`/tourPackages/${pkg._id}`}
-                  style={{
-                    padding: "10px 20px",
-                    backgroundColor: "#333",
-                    color: "#fff",
-                    textDecoration: "none",
-                    borderRadius: "4px",
-                  }}
-                >
-                  View More
+              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '15px' }}>
+                <Link to={`/tourPackages/${pkg._id}`} style={{ flex: 1 }}>
+                  <button
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#007bff',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontWeight: '500',
+                      width: '100%'
+                    }}
+                  >
+                    View More
+                  </button>
+                </Link>
+                <Link to={`/book-package/${pkg._id}`} style={{ flex: 1 }}>
+                  <button
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: '#28a745',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontWeight: '500',
+                      width: '100%'
+                    }}
+                  >
+                    Book Now
+                  </button>
                 </Link>
               </div>
             </div>
