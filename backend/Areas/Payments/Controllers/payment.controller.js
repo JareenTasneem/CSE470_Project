@@ -1,6 +1,6 @@
 // backend/Areas/Payments/Controllers/payment.controller.js
 /* eslint-disable consistent-return */
-const Payment  = require("../Models/payment");
+const Payment  = require("../Models/Payment");
 const Booking  = require("../../Bookings/Models/Booking");
 const { v4: uuidv4 } = require("uuid");
 const stripe   = require("stripe")(process.env.STRIPE_SECRET_KEY);

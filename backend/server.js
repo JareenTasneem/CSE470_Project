@@ -1,6 +1,7 @@
 // server.js
 const express = require("express");
 const connectDB = require("./config/db");
+const path = require('path'); 
 const cors = require("cors");
 require("dotenv").config();
 
@@ -47,6 +48,8 @@ app.use("/api/bookings", bookingRoutes);
 // ← Add these two lines to mount your payments routes:
 const paymentRoutes = require("./Areas/Payments/Routes/payment.routes");
 app.use("/api/payments", paymentRoutes);
+
+app.use('/uploads/profile', express.static(path.join(__dirname, 'uploads', 'profile')));
 
 
 
