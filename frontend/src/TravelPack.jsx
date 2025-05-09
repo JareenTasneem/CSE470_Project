@@ -3,22 +3,34 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "./axiosConfig";
 import "./styles/style.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { Link } from "react-router-dom";
+import { href, Link } from "react-router-dom";
 // Import the AuthContext to access the logged-in user info
 import { AuthContext } from "./contexts/AuthContext";
 
 const TravelPack = () => {
   const [packages, setPackages] = useState([]);
-  
-  // Access the user and logout function from AuthContext
+  const [userProfile, setUserProfile] = useState(null);
   const { user, logout } = useContext(AuthContext);
 
   useEffect(() => {
+    // Fetch tour packages
     axios
       .get("http://localhost:5000/api/tourPackages")
       .then((response) => setPackages(response.data))
       .catch((err) => console.error("Error fetching packages:", err));
-  }, []);
+
+    // Fetch user profile if user is logged in
+    if (user) {
+      axios
+        .get("http://localhost:5000/api/users/profile", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        })
+        .then((response) => setUserProfile(response.data))
+        .catch((err) => console.error("Error fetching user profile:", err));
+    }
+  }, [user]);
 
   return (
     <div>
@@ -29,7 +41,9 @@ const TravelPack = () => {
             {user ? (
               <>
                 <li>
-                  <span>{user.name}</span>
+                  <Link to="/profilecustomization" style={{ textDecoration: "none", color: "inherit" }}>
+                    {userProfile?.name || "Loading..."}
+                  </Link>
                 </li>
                 <li>
                   <button onClick={logout}>Logout</button>
