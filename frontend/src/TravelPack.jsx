@@ -3,31 +3,23 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "./axiosConfig";
 import "./styles/style.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 // Import the AuthContext to access the logged-in user info
 import { AuthContext } from "./contexts/AuthContext";
 
 const TravelPack = () => {
   const [packages, setPackages] = useState([]);
-  
-  // Access the user and logout function from AuthContext
+  const [userProfile, setUserProfile] = useState(null);
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Fetch tour packages
     axios
       .get("http://localhost:5000/api/tourPackages")
       .then((response) => setPackages(response.data))
       .catch((err) => console.error("Error fetching packages:", err));
   }, []);
-
-  const handleReviewClick = () => {
-    if (!user) {
-      navigate('/login', { state: { from: '/my-history' } });
-    } else {
-      navigate('/my-history');
-    }
-  };
 
   return (
     <div>
@@ -38,14 +30,7 @@ const TravelPack = () => {
             {user ? (
               <>
                 <li>
-                  <Link to="/confirmedBookings" style={{ textDecoration: "none", color: "inherit", marginRight: 16 }}>
-                    <button style={{ background: '#000', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 14px', fontWeight: 500, fontSize: '15px', cursor: 'pointer', minWidth: 0, minHeight: 0, lineHeight: 1.2 }}>
-                      Confirmed Bookings
-                    </button>
-                  </Link>
-                </li>
-                <li>
-                  <span style={{ background: '#181818', color: '#fff', borderRadius: 8, padding: '6px 14px', fontWeight: 500, fontSize: '15px', marginRight: 8, display: 'inline-block', minWidth: 0, minHeight: 0, lineHeight: 1.2 }}>{user.name}</span>
+                  <span>{user.name}</span>
                 </li>
                 <li>
                   <button onClick={logout} style={{ background: '#181818', color: '#fff', borderRadius: 8, padding: '6px 14px', fontWeight: 500, fontSize: '15px', minWidth: 0, minHeight: 0, lineHeight: 1.2 }}>Logout</button>

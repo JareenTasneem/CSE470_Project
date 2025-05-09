@@ -44,6 +44,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 
 import PaymentSuccess from "./PaymentSuccess";
 import PaymentCancel from "./PaymentCancel";
+import ProfileCustomization from "./ProfileCustomization";
 
 function AppRoutes() {
   const location = useLocation();
@@ -58,6 +59,8 @@ function AppRoutes() {
         <Route path="/tourPackages/:id" element={<TourPackageDetails />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        {/* Ritu */}
+        <Route path="/profilecustomization" element={<ProfileCustomization />} />
 
         {/* ─── Custom Packages ─── */}
         <Route path="/customizePackage" element={<CustomizePackage />} />
