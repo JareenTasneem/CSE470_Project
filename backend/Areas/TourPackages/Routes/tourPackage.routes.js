@@ -7,6 +7,7 @@ const auth = require("../../../middlewares/auth");
 const {
   getAllPackages,
   getPackageById,
+  getPersonalizedRecommendations,
 } = require("../Controllers/TourPackageController");
 
 // GET all packages
@@ -14,6 +15,9 @@ router.get("/", getAllPackages);
 
 // GET single package by ID
 router.get("/:id", getPackageById);
+
+// GET personalized recommendations
+router.get("/personalized", auth, getPersonalizedRecommendations);
 
 router.get("/protected", auth, (req, res) => {
   // Only accessible if the token is valid

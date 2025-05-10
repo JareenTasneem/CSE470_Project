@@ -11,13 +11,30 @@ const TravelPack = () => {
   const [userProfile, setUserProfile] = useState(null);
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [personalized, setPersonalized] = useState([]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/api/tourPackages")
-      .then((response) => setPackages(response.data))
-      .catch((err) => console.error("Error fetching packages:", err));
-  }, []);
+    if (user && user.token) {
+      axios
+        .get("http://localhost:5000/api/tourPackages/personalized", {
+          headers: { Authorization: `Bearer ${user.token}` },
+        })
+        .then((response) => setPersonalized(response.data))
+        .catch((err) => {
+          console.error("Error fetching personalized recommendations:", err);
+          // fallback to default
+          axios
+            .get("http://localhost:5000/api/tourPackages")
+            .then((response) => setPackages(response.data))
+            .catch((err) => console.error("Error fetching packages:", err));
+        });
+    } else {
+      axios
+        .get("http://localhost:5000/api/tourPackages")
+        .then((response) => setPackages(response.data))
+        .catch((err) => console.error("Error fetching packages:", err));
+    }
+  }, [user]);
 
   return (
     <div>
@@ -189,79 +206,113 @@ const TravelPack = () => {
         </div>
       </header>
 
-      <div className="offers">
-        <h1>Recommendations for You</h1>
-        <p>choose your next destination</p>
+      <div className="offers" style={{ padding: '40px 0', background: '#f8f9fa' }}>
+        <h1 style={{ textAlign: 'center', fontWeight: 700, fontSize: '2.2rem', marginBottom: 8, letterSpacing: 0.5 }}>Personalized Recommendations for You</h1>
+        <p style={{ textAlign: 'center', color: '#666', marginBottom: 32, fontSize: '1.1rem' }}>Choose your next destination</p>
 
-        <div className="cards">
-          {packages.map((pkg) => (
-            <div className="card" key={pkg._id} style={{ width: "300px" }}>
-              <div className="img_text">
+        <div className="cards" style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '32px',
+          justifyContent: 'center',
+          alignItems: 'stretch',
+          maxWidth: 1400,
+          margin: '0 auto',
+        }}>
+          {(user && personalized.length > 0 ? personalized : packages).map((pkg) => (
+            <div
+              className="card"
+              key={pkg._id}
+              style={{
+                background: '#fff',
+                borderRadius: 18,
+                boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                cursor: 'pointer',
+                minHeight: 420,
+                position: 'relative',
+                marginBottom: 0,
+              }}
+              onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-6px) scale(1.03)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.13)'; }}
+              onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.08)'; }}
+            >
+              <div style={{ height: 180, overflow: 'hidden', position: 'relative', borderTopLeftRadius: 18, borderTopRightRadius: 18 }}>
                 <img
                   src={pkg.images && pkg.images.length > 0 ? pkg.images[0] : "/images/temp4.jpeg"}
                   alt="Tour"
-                  style={{ width: "100%", height: "150px", objectFit: "cover" }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderTopLeftRadius: 18, borderTopRightRadius: 18 }}
                 />
-                <h4>Included: {pkg.inclusions?.join(", ") || "No inclusions listed"}</h4>
+                <div style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  width: '100%',
+                  background: 'rgba(0,0,0,0.45)',
+                  color: '#fff',
+                  fontWeight: 500,
+                  fontSize: 14,
+                  padding: '8px 16px',
+                  textShadow: '0 1px 4px rgba(0,0,0,0.18)',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  borderBottomLeftRadius: 0,
+                  borderBottomRightRadius: 0,
+                  borderTopLeftRadius: 0,
+                  borderTopRightRadius: 0,
+                }}>
+                  Included: {pkg.inclusions?.join(', ') || 'No inclusions listed'}
+                </div>
               </div>
-
-              <div className="cont_bx">
-                <div className="price">
-                  <div className="heart_chat">
-                    <i className="bi bi-heart-fill">
-                      <span>234</span>
-                    </i>
-                    <i className="bi bi-chat-fill">
-                      <span>567</span>
-                    </i>
+              <div style={{ padding: '22px 20px 18px 20px', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+                    <span style={{ color: '#222', fontWeight: 700, fontSize: 18, flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pkg.package_title}</span>
+                    <span style={{ color: '#007bff', fontWeight: 600, fontSize: 18 }}>${pkg.price}</span>
                   </div>
-                  <h3>{pkg.package_title}</h3>
-                  <p>{pkg.package_details}</p>
-                  <div
-                    className="info_price"
+                  <div style={{ color: '#444', fontSize: 15, marginBottom: 10, minHeight: 38, maxHeight: 38, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {pkg.package_details?.length > 60 ? pkg.package_details.slice(0, 60) + '…' : pkg.package_details}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
+                  <button
                     style={{
-                      display: "flex",
-                      gap: "10px",
-                      justifyContent: "center",
-                      marginTop: "10px",
+                      padding: '8px 18px',
+                      backgroundColor: '#007bff',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: 6,
+                      cursor: 'pointer',
+                      fontWeight: 500,
+                      fontSize: 15,
+                      flex: 1,
+                      transition: 'background 0.2s',
                     }}
+                    onClick={() => navigate(`/tourPackages/${pkg._id}`)}
                   >
+                    View More
+                  </button>
+                  <Link to={`/book-package/${pkg._id}`} style={{ flex: 1, textDecoration: 'none' }}>
                     <button
                       style={{
-                        padding: "10px 20px",
-                        backgroundColor: "#007bff",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        fontWeight: "500",
-                        width: "100%",
-                      }}
-                      onClick={() => {
-                        // You can implement modal or routing here
-                        alert("View More clicked for: " + pkg.package_title);
+                        padding: '8px 18px',
+                        backgroundColor: '#28a745',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 6,
+                        cursor: 'pointer',
+                        fontWeight: 500,
+                        fontSize: 15,
+                        width: '100%',
+                        transition: 'background 0.2s',
                       }}
                     >
-                      View More
+                      Book Now
                     </button>
-                    <Link to={`/book-package/${pkg._id}`} style={{ flex: 1 }}>
-                      <button
-                        style={{
-                          padding: "10px 20px",
-                          backgroundColor: "#28a745",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontWeight: "500",
-                          width: "100%",
-                        }}
-                      >
-                        Book Now
-                      </button>
-                    </Link>
-                    <h4 style={{ flex: 1, textAlign: "center", margin: 0 }}>${pkg.price}</h4>
-                  </div>
+                  </Link>
                 </div>
               </div>
             </div>
