@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   Camera,
   Facebook,
@@ -16,6 +16,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import axios from "axios";
+import { AuthContext } from "./contexts/AuthContext";
 
 // Theme Management Utility
 const ThemeManager = {
@@ -74,6 +75,8 @@ export default function ProfileCustomization() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
   const [isHovering, setIsHovering] = useState(false);
+
+  const { user, login } = useContext(AuthContext);
 
   // Show notification function
   const showNotification = (message, type = "success") => {
@@ -152,11 +155,15 @@ export default function ProfileCustomization() {
         birthdate: userData.birthdate || null,
       };
 
-      await axios.put("http://localhost:5000/api/users/profile", dataToSend, {
+      const response = await axios.put("http://localhost:5000/api/users/profile", dataToSend, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
+
+      // Update localStorage and AuthContext with new user data
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      if (login) login(response.data.user, localStorage.getItem("authToken"));
 
       showNotification("Profile updated successfully");
     } catch (error) {

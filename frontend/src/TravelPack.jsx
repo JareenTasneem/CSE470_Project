@@ -32,7 +32,7 @@ const TravelPack = () => {
                     style={{ cursor: "pointer", fontWeight: 600, color: "#007bff", background: "#181818", borderRadius: 20, padding: "6px 18px", marginRight: 10, display: "inline-block" }}
                     onClick={() => navigate("/profilecustomization")}
                   >
-                    {user.name}
+                    {user.name && user.name.trim() !== "" ? user.name : "Profile"}
                   </span>
                 </li>
                 <li>
