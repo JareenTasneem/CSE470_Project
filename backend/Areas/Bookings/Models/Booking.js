@@ -62,6 +62,13 @@ const bookingSchema = new mongoose.Schema({
     default: {},
   },
 
+  // Refund-related fields
+  refundRequested: { type: Boolean, default: false },
+  refundStatus: { type: String, enum: ["none", "requested", "approved", "rejected", "processed"], default: "none" },
+  refundReason: { type: String, default: "" },
+  refundAmount: { type: Number, default: 0 },
+  refundedAt: { type: Date },
+
 }, { timestamps: true });
 
 // Auto-generate booking_id if not already set

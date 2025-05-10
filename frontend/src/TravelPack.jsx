@@ -111,7 +111,7 @@ const TravelPack = () => {
               <nav className="fin_nav">
                 <ul>
                   <li>
-                    <Link to="/" style={{ color: "white", textDecoration: "none" }}>
+                    <Link to="/my-bookings" style={{ color: "white", textDecoration: "none" }}>
                       Payment
                     </Link>
                   </li>

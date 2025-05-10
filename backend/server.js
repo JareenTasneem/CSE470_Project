@@ -49,6 +49,9 @@ app.use("/api/bookings", bookingRoutes);
 const paymentRoutes = require("./Areas/Payments/Routes/payment.routes");
 app.use("/api/payments", paymentRoutes);
 
+const refundRoutes = require("./Areas/Payments/Routes/refund.routes");
+app.use("/api/refunds", refundRoutes);
+
 const reviewRoutes = require("./Areas/Reviews/Routes/reviewRoutes");
 app.use("/api/reviews", reviewRoutes);
 

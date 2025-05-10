@@ -41,18 +41,18 @@ const Refund = () => {
     // Process refund
     const processRefund = async () => {
         try {
-            // Here you would make the API call to process the refund
             await axios.post(`${API_BASE}/refunds/request`, {
                 bookingId,
                 reason
             }, {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
-            
             navigate(`/refund-success/${bookingId}`);
         } catch (err) {
+            // Show the real error message from the backend if available
+            const backendMsg = err?.response?.data?.message || "Failed to process refund request.";
+            setError(backendMsg);
             console.error("Refund request error:", err);
-            setError("Failed to process refund request.");
         }
     };
 
@@ -95,14 +95,18 @@ const Refund = () => {
     
     if (error) return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-            <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
-                <div className="text-red-500 text-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+            <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
+                <h2 className="text-xl font-bold text-gray-800 mb-4">Refund Status</h2>
+                <div className={`mb-4 px-4 py-3 rounded ${error.includes('already requested') ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 'bg-red-100 text-red-800 border border-red-300'}`}>
+                    {error.includes('already requested') ? (
+                        <>
+                            <span style={{ fontSize: 32, display: 'block', marginBottom: 8 }}>✔️</span>
+                            <p>Your refund request for this booking has already been submitted and is being processed.</p>
+                        </>
+                    ) : (
+                        <p>{error}</p>
+                    )}
                 </div>
-                <h2 className="text-xl font-bold text-center text-gray-800 mb-4">Error</h2>
-                <p className="text-gray-600 text-center">{error}</p>
                 <div className="mt-6 text-center">
                     <button 
                         onClick={() => navigate(-1)}

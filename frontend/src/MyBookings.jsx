@@ -18,7 +18,8 @@ const MyBookings = ({ setShowModal }) => {
         headers: { Authorization: `Bearer ${user.token}` },
       })
       .then((res) => {
-        setBookings(res.data);
+        const paidBookings = res.data.filter(booking => booking.status === "Confirmed");
+        setBookings(paidBookings);
         setLoading(false);
       })
       .catch((err) => {
@@ -56,14 +57,10 @@ const MyBookings = ({ setShowModal }) => {
     return <p style={{ textAlign: "center" }}>Loading bookings...</p>;
   }
 
-  const activeBookings = bookings.filter(
-    (booking) => booking.status !== "Cancelled"
-  );
-
-  if (activeBookings.length === 0) {
+  if (bookings.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: "20px" }}>
-        <p>You have no active bookings.</p>
+        <p>You have no paid bookings.</p>
         <Link to="/tourPackages">Browse Tour Packages</Link>
       </div>
     );
@@ -72,7 +69,7 @@ const MyBookings = ({ setShowModal }) => {
   return (
     <div style={{ padding: "30px" }}>
       <h2 style={{ textAlign: "center", marginBottom: "30px" }}>
-        My Booked Packages
+        My Paid Bookings
       </h2>
 
       <div
@@ -82,7 +79,7 @@ const MyBookings = ({ setShowModal }) => {
           gap: "20px",
         }}
       >
-        {activeBookings.map((booking) => {
+        {bookings.map((booking) => {
           const isCustom = booking.custom_package !== null;
           const tour = booking.tour_package;
           const flights = isCustom
@@ -189,37 +186,68 @@ const MyBookings = ({ setShowModal }) => {
                 {/* … any other details you had … */}
 
                 <div style={{ marginTop: "20px" }}>
-                  <button
-                    onClick={() => cancelBooking(booking._id)}
-                    style={{
-                      padding: "8px 16px",
-                      backgroundColor: "#d9534f",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      marginRight: "10px",
-                    }}
-                  >
-                    Cancel Booking
-                  </button>
+                  {booking.refundRequested ? (
+                    <>
+                      <span style={{
+                        display: 'inline-block',
+                        backgroundColor: '#ffe066',
+                        color: '#856404',
+                        padding: '8px 16px',
+                        borderRadius: '4px',
+                        fontWeight: 600,
+                        marginRight: '10px',
+                      }}>
+                        Refund Requested
+                      </span>
+                      <button
+                        onClick={() => navigate(`/refund-status/${booking._id}`)}
+                        style={{
+                          padding: '8px 16px',
+                          backgroundColor: '#007bff',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Show Refund Status
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => navigate(`/refund/${booking._id}`)}
+                      style={{
+                        padding: "8px 16px",
+                        backgroundColor: "#ffc107",
+                        color: "#333",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        marginRight: "10px",
+                      }}
+                    >
+                      Refund
+                    </button>
+                  )}
 
-                  {/* NEW: Pay Now */}
-                  <button
-                    onClick={() =>
-                      navigate(`/payment-options/${booking._id}`)
-                    }
+                  {/* Download Invoice Button */}
+                  <a
+                    href={`http://localhost:5000/api/payments/invoice/booking/${booking._id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     style={{
                       padding: "8px 16px",
-                      backgroundColor: "#0066ff",
+                      backgroundColor: "#28a745",
                       color: "#fff",
                       border: "none",
                       borderRadius: "4px",
                       cursor: "pointer",
+                      textDecoration: "none",
+                      display: "inline-block"
                     }}
                   >
-                    Pay Now
-                  </button>
+                    Download Invoice
+                  </a>
                 </div>
               </div>
             </div>

@@ -45,6 +45,9 @@ import { AuthProvider } from "./contexts/AuthContext";
 import PaymentSuccess from "./PaymentSuccess";
 import PaymentCancel from "./PaymentCancel";
 import ProfileCustomization from "./ProfileCustomization";
+import Refund from "./Refund";
+import RefundSuccess from "./RefundSuccess";
+import RefundStatus from "./RefundStatus";
 
 function AppRoutes() {
   const location = useLocation();
@@ -69,7 +72,7 @@ function AppRoutes() {
         <Route path="/book-package/:id" element={<BookPackage />} />
 
         {/* ─── My Bookings & Confirmed ─── */}
-        <Route path="/myBookings" element={<MyBookings />} />
+        <Route path="/my-bookings" element={<MyBookings />} />
         <Route path="/confirmedBookings" element={<ConfirmedBookings />} />
         <Route path="/my-history" element={<MyHistory />} />
         <Route path="/write-review" element={<WriteReview />} />
@@ -101,6 +104,9 @@ function AppRoutes() {
         <Route path="/invoice/:paymentId" element={<Invoice />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/payment-cancel" element={<PaymentCancel />} />
+        <Route path="/refund/:bookingId" element={<Refund />} />
+        <Route path="/refund-success/:bookingId" element={<RefundSuccess />} />
+        <Route path="/refund-status/:bookingId" element={<RefundStatus />} />
       </Routes>
 
       {/* Modal overlay for MyBookings if navigated with a background */}

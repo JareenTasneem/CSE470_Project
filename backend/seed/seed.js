@@ -293,6 +293,25 @@ console.log("✅ 300 flights seeded with business & economy seats");
       const hotel = faker.helpers.arrayElement(insertedHotels);
       const flight = faker.helpers.arrayElement(insertedFlights);
 
+      // Add refund fields for some bookings
+      let refundRequested = false;
+      let refundStatus = "none";
+      let refundReason = "";
+      let refundAmount = 0;
+      let refundedAt = null;
+      if (i < 30) { // 10% requested
+        refundRequested = true;
+        refundStatus = "requested";
+        refundReason = "Change of plans";
+        refundAmount = Math.floor(pkg.price * 0.75);
+      } else if (i >= 30 && i < 45) { // 5% processed
+        refundRequested = true;
+        refundStatus = "processed";
+        refundReason = "Medical emergency";
+        refundAmount = Math.floor(pkg.price * 0.9);
+        refundedAt = faker.date.recent();
+      }
+
       bookings.push({
         booking_id: faker.string.uuid(),
         user: user._id,
@@ -301,44 +320,61 @@ console.log("✅ 300 flights seeded with business & economy seats");
         flight: flight._id,
         status: faker.helpers.arrayElement(["Pending", "Confirmed", "Cancelled"]),
         total_price: pkg.price,
+        refundRequested,
+        refundStatus,
+        refundReason,
+        refundAmount,
+        refundedAt,
       });
     }
     const insertedBookings = await Booking.insertMany(bookings);
     console.log("✅ 300 bookings seeded");
 
     // 7) Seed Payments
-    const payments = insertedBookings.map((booking) => ({
-      payment_id: faker.string.uuid(),
-      user: booking.user,
-      amount: booking.total_price,
-      method: faker.helpers.arrayElement(["Card", "PayPal", "bKash", "Nagad", "Bank"]),
-      status: faker.helpers.arrayElement(["Completed", "Pending", "Refunded"]),
-      transaction_date: faker.date.recent(),
-    }));
+    const payments = [];
+    insertedBookings.forEach((booking, idx) => {
+      // For each booking, create 1-3 installments (for realism)
+      const numInstallments = faker.number.int({ min: 1, max: 3 });
+      const perInstallment = Math.round((booking.total_price || 0) / numInstallments);
+      for (let i = 1; i <= numInstallments; i++) {
+        payments.push({
+          payment_id: faker.string.uuid(),
+          booking: booking._id,
+          installmentNumber: i,
+          amount: perInstallment,
+          dueDate: faker.date.future(),
+          status: faker.helpers.arrayElement(["Paid", "Unpaid"]),
+          paidAt: faker.helpers.arrayElement([null, faker.date.recent()]),
+          invoiceId: faker.string.uuid(),
+        });
+      }
+    });
     await Payment.insertMany(payments);
-    console.log("✅ 300 payments seeded");
+    console.log("✅ Payments seeded");
 
     // 8) Seed Reviews
     const reviews = [];
     for (let i = 0; i < 300; i++) {
       const user = faker.helpers.arrayElement(insertedUsers);
+      const booking = faker.helpers.arrayElement(insertedBookings);
       const type = faker.helpers.arrayElement(["Hotel", "Flight", "TourPackage"]);
       let item;
       if (type === "Hotel") {
-        item = faker.helpers.arrayElement(insertedHotels);
+        item = booking.hotel;
       } else if (type === "Flight") {
-        item = faker.helpers.arrayElement(insertedFlights);
+        item = booking.flight;
       } else {
-        item = faker.helpers.arrayElement(insertedPackages);
+        item = booking.tour_package;
       }
-
       reviews.push({
         review_id: faker.string.uuid(),
         user: user._id,
-        item: item._id,
+        booking: booking._id,
+        item: item,
         item_type: type,
         rating: faker.number.int({ min: 1, max: 5 }),
-        comment: lorem.generateSentences(1),
+        title: faker.lorem.words(5),
+        comment: faker.lorem.sentences(2),
       });
     }
     await Review.insertMany(reviews);
