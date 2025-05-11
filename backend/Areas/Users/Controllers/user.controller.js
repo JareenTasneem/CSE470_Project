@@ -127,7 +127,8 @@ const upload = multer({
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, phone, address, password } = req.body;
+    const { name, email, phone, address, password, user_type } = req.body;
+    console.log("Registering user with type:", user_type); // Debug log
 
     // Check if user with that email already exists
     const existingUser = await User.findOne({ email });
@@ -141,15 +142,15 @@ const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create new user - Done by Ritu
+    // Create new user with user_type
     const newUser = new User({
-      user_id: Date.now().toString(), // Or you can use faker.uuid()
+      user_id: Date.now().toString(),
       name,
       email,
       phone,
       address,
       password: hashedPassword,
-      // Other fields will use schema defaults - Done by Ritu
+      user_type: user_type || "Customer", // Use provided user_type or default to Customer
     });
 
     await newUser.save();
@@ -177,8 +178,10 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    // Log user type for debugging
+    console.log("User type from database:", user.user_type);
+
     // Generate JWT
-    // Make sure you have JWT_SECRET in your .env
     const token = jwt.sign(
       {
         userId: user._id,
@@ -187,10 +190,11 @@ const loginUser = async (req, res) => {
         membership_tier: user.membership_tier,
         loyaltyPoints: user.loyaltyPoints,
       },
-      process.env.JWT_SECRET, // e.g. "SOME_SUPER_SECRET_KEY"
-      { expiresIn: "1d" } // token validity
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
     );
 
+    // Send response with user data
     res.json({
       message: "Login successful",
       token,
@@ -199,7 +203,10 @@ const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         user_type: user.user_type,
+        membership_tier: user.membership_tier,
+        loyaltyPoints: user.loyaltyPoints,
       },
+      isAdmin: user.user_type === "Admin" // Add explicit admin flag
     });
   } catch (error) {
     console.error("Error in loginUser:", error);

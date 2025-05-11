@@ -20,6 +20,7 @@ import MyBookings from "./MyBookings";
 import MyBookingsModal from "./MyBookingsModal";
 import MyHistory from "./MyHistory";
 import WriteReview from "./WriteReview";
+import AdminDashboard from "./AdminDashboard";
 
 import FlightList from "./FlightList";
 import FlightDetails from "./FlightDetails";
@@ -62,6 +63,7 @@ function AppRoutes() {
         <Route path="/tourPackages/:id" element={<TourPackageDetails />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
         {/* Ritu */}
         <Route path="/profilecustomization" element={<ProfileCustomization />} />
 

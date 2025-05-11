@@ -1,6 +1,6 @@
 // ./src/Signup.jsx
 import React, { useState } from "react";
-import axios from "axios";
+import axios from "./axiosConfig";
 import { useNavigate } from "react-router-dom";
 
 function Signup() {
@@ -12,6 +12,7 @@ function Signup() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [password, setPassword] = useState("");
+  const [userType, setUserType] = useState("Customer");
 
   // For errors or success messages
   const [error, setError] = useState("");
@@ -29,6 +30,7 @@ function Signup() {
         phone,
         address,
         password,
+        user_type: userType,
       });
 
       if (response.status === 201) {
@@ -89,6 +91,16 @@ function Signup() {
           required
           onChange={(e) => setPassword(e.target.value)}
         />
+
+        <label>User Type</label>
+        <select
+          value={userType}
+          onChange={(e) => setUserType(e.target.value)}
+          required
+        >
+          <option value="Customer">Customer</option>
+          <option value="Admin">Admin</option>
+        </select>
 
         <button type="submit">Sign Up</button>
       </form>

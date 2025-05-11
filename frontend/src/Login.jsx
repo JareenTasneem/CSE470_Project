@@ -1,14 +1,15 @@
 // ./src/Login.jsx
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import axios from "./axiosConfig";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "./contexts/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
@@ -21,14 +22,31 @@ function Login() {
         password,
       });
 
-      // If successful, response contains { token, user }
-      localStorage.setItem("authToken", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+      // Store user data and token
+      const userData = response.data.user;
+      const token = response.data.token;
 
-      // Optionally redirect to home or any protected route
-      navigate("/");
+      console.log("Login response:", response.data); // Debug log
+      console.log("User type:", userData.user_type); // Debug log
+
+      // Store in localStorage
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("user", JSON.stringify(userData));
+      
+      // Call the login function from AuthContext
+      login(userData, token);
+
+      // Redirect based on user type
+      if (userData.user_type === "Admin") {
+        console.log("Redirecting to admin dashboard"); // Debug log
+        navigate("/admin-dashboard", { replace: true });
+      } else {
+        console.log("Redirecting to home page"); // Debug log
+        navigate("/", { replace: true });
+      }
     } catch (err) {
-        setError(err.response?.data?.message || "Something went wrong!");
+      console.error("Login error:", err); // Debug log
+      setError(err.response?.data?.message || "Something went wrong!");
     }
   };
 

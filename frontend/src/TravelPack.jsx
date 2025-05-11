@@ -14,6 +14,13 @@ const TravelPack = () => {
   const [personalized, setPersonalized] = useState([]);
 
   useEffect(() => {
+    // Redirect admin users to admin dashboard
+    if (user && user.user_type === "Admin") {
+      navigate("/admin-dashboard", { replace: true });
+    }
+  }, [user, navigate]);
+
+  useEffect(() => {
     if (user && user.token) {
       axios
         .get("http://localhost:5000/api/tourPackages/personalized", {
