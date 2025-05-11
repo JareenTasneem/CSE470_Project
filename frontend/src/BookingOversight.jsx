@@ -208,6 +208,7 @@ export default function BookingOversight() {
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Details</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Refund Status</th>
                   <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
                   <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
@@ -223,14 +224,9 @@ export default function BookingOversight() {
                       <div className="text-sm font-medium text-gray-900">{booking.booking_id}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-9 w-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
-                          {booking.user?.name?.charAt(0) || "?"}
-                        </div>
-                        <div className="ml-3">
-                          <div className="text-sm font-medium text-gray-900">{booking.user?.name || "N/A"}</div>
-                          <div className="text-xs text-gray-500 truncate max-w-[180px]">{booking.user?.email || "N/A"}</div>
-                        </div>
+                      <div className="ml-3">
+                        <div className="text-sm font-medium text-gray-900">{booking.user?.name || "N/A"}</div>
+                        <div className="text-xs text-gray-500 truncate max-w-[180px]">{booking.user?.email || "N/A"}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -250,6 +246,17 @@ export default function BookingOversight() {
                           {booking.status}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2.5 py-1 inline-flex text-xs rounded-md font-medium ${
+                        booking.refundStatus === "requested" ? "bg-yellow-100 text-yellow-800 border border-yellow-200" :
+                        booking.refundStatus === "approved" ? "bg-green-100 text-green-800 border border-green-200" :
+                        booking.refundStatus === "processed" ? "bg-emerald-100 text-emerald-800 border border-emerald-200" :
+                        booking.refundStatus === "rejected" ? "bg-rose-100 text-rose-800 border border-rose-200" :
+                        "bg-gray-100 text-gray-800 border border-gray-200"
+                      }`}>
+                        {booking.refundStatus ? booking.refundStatus.charAt(0).toUpperCase() + booking.refundStatus.slice(1) : "None"}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-700">{format(new Date(booking.createdAt), "MMM d, yyyy")}</div>
