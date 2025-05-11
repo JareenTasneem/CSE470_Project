@@ -7,6 +7,7 @@ import BookingOversight from "./BookingOversight";
 import Analytics from "./Analytics";
 import Notifications from "./Notifications";
 import "./dashboard.css";
+import { AuthContext } from "./contexts/AuthContext";
 
 const PAGES = {
   users: <UserManagement />,
@@ -19,16 +20,27 @@ export default function AdminDashboard() {
   const [page, setPage] = useState("users");
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = React.useContext(AuthContext);
 
   useEffect(() => {
+    // If user is not admin, force logout and redirect
+    if (!user || user.user_type !== "Admin") {
+      logout();
+      navigate("/login", { replace: true });
+      return;
+    }
+    // Trap the admin on the dashboard
+    window.history.pushState(null, '', window.location.pathname);
     const handlePopState = (event) => {
-      if (location.pathname !== "/admin-dashboard") {
+      if (location.pathname === "/admin-dashboard") {
+        window.history.pushState(null, '', window.location.pathname);
+      } else {
         navigate("/admin-dashboard", { replace: true });
       }
     };
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [location, navigate]);
+  }, [location, navigate, user, logout]);
 
   return (
     <div className="dashboard">

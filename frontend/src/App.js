@@ -127,6 +127,11 @@ function AppRoutes() {
             <BookFlight />
           </ProtectedRoute>
         } />
+        <Route path="/profilecustomization" element={
+          <ProtectedRoute>
+            <ProfileCustomization />
+          </ProtectedRoute>
+        } />
 
         {/* ─── Payment Flow Routes ─── */}
         <Route path="/payment-options/:bookingId" element={

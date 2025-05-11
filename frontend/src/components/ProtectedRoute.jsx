@@ -16,5 +16,9 @@ export const ProtectedRoute = ({ children, requireAdmin = false }) => {
     return <Navigate to="/" replace />;
   }
 
+  if (user && user.user_type === 'Admin' && location.pathname !== '/admin-dashboard') {
+    return <Navigate to="/admin-dashboard" replace />;
+  }
+
   return children;
 }; 
