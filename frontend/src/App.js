@@ -50,6 +50,7 @@ import ProfileCustomization from "./ProfileCustomization";
 import Refund from "./Refund";
 import RefundSuccess from "./RefundSuccess";
 import RefundStatus from "./RefundStatus";
+import AdminProfileCustomization from "./AdminProfileCustomization";
 
 function AppRoutes() {
   const location = useLocation();
@@ -59,7 +60,11 @@ function AppRoutes() {
     <>
       <Routes location={background || location}>
         {/* ─── Public Routes ─── */}
-        <Route path="/" element={<TravelPack />} />
+        <Route path="/" element={
+          <ProtectedRoute>
+            <TravelPack />
+          </ProtectedRoute>
+        } />
         <Route path="/tourPackages" element={<TourPackagesList />} />
         <Route path="/tourPackages/:id" element={<TourPackageDetails />} />
         <Route path="/signup" element={<Signup />} />
@@ -130,6 +135,11 @@ function AppRoutes() {
         <Route path="/profilecustomization" element={
           <ProtectedRoute>
             <ProfileCustomization />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-profilecustomization" element={
+          <ProtectedRoute requireAdmin>
+            <AdminProfileCustomization />
           </ProtectedRoute>
         } />
 

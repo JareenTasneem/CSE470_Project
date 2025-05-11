@@ -32,7 +32,10 @@ export default function AdminDashboard() {
     // Trap the admin on the dashboard
     window.history.pushState(null, '', window.location.pathname);
     const handlePopState = (event) => {
-      if (location.pathname === "/admin-dashboard") {
+      if (
+        location.pathname === "/admin-dashboard" ||
+        location.pathname === "/admin-profilecustomization"
+      ) {
         window.history.pushState(null, '', window.location.pathname);
       } else {
         navigate("/admin-dashboard", { replace: true });

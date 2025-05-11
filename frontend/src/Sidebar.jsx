@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const navItems = [
   { key: "users", label: "User Management" },
@@ -8,6 +9,7 @@ const navItems = [
 ];
 
 export default function Sidebar({ setPage, page }) {
+  const navigate = useNavigate();
   return (
     <nav className="dashboard-sidebar">
       <div className="sidebar-title">Admin Panel</div>
@@ -21,6 +23,14 @@ export default function Sidebar({ setPage, page }) {
             {item.label}
           </button>
         ))}
+      </div>
+      <div style={{ marginTop: "auto", padding: 16 }}>
+        <button
+          onClick={() => navigate("/admin-profilecustomization")}
+          style={{ width: "100%", padding: 10, background: "#007bff", color: "#fff", border: "none", borderRadius: 4 }}
+        >
+          Edit My Profile
+        </button>
       </div>
     </nav>
   );
