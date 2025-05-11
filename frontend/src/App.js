@@ -21,6 +21,7 @@ import MyBookingsModal from "./MyBookingsModal";
 import MyHistory from "./MyHistory";
 import WriteReview from "./WriteReview";
 import AdminDashboard from "./AdminDashboard";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 import FlightList from "./FlightList";
 import FlightDetails from "./FlightDetails";
@@ -57,58 +58,122 @@ function AppRoutes() {
   return (
     <>
       <Routes location={background || location}>
-        {/* ─── Main Pages ─── */}
+        {/* ─── Public Routes ─── */}
         <Route path="/" element={<TravelPack />} />
         <Route path="/tourPackages" element={<TourPackagesList />} />
         <Route path="/tourPackages/:id" element={<TourPackageDetails />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        {/* Ritu */}
-        <Route path="/profilecustomization" element={<ProfileCustomization />} />
-
-        {/* ─── Custom Packages ─── */}
-        <Route path="/customizePackage" element={<CustomizePackage />} />
-        <Route path="/customize-package" element={<CustomizePackage />} />
-        <Route path="/myPackages" element={<MyCustomPackages />} />
-        <Route path="/book-package/:id" element={<BookPackage />} />
-
-        {/* ─── My Bookings & Confirmed ─── */}
-        <Route path="/my-bookings" element={<MyBookings />} />
-        <Route path="/confirmedBookings" element={<ConfirmedBookings />} />
-        <Route path="/my-history" element={<MyHistory />} />
-        <Route path="/write-review" element={<WriteReview />} />
-
-        {/* ─── Flights, Hotels, Entertainment ─── */}
         <Route path="/flights" element={<FlightList />} />
         <Route path="/flight/:id" element={<FlightDetails />} />
         <Route path="/hotels" element={<HotelList />} />
         <Route path="/hotel/:id" element={<HotelDetails />} />
         <Route path="/hotels/details/:id" element={<HotelRoomDetails />} />
-        <Route path="/book-hotel/:id" element={<BookHotel />} />
-        <Route path="/book-flight/:id" element={<BookFlight />} />
-        <Route path="/book-custom-package/:id" element={<BookCustomPackage />} />
         <Route path="/entertainment/:id" element={<EntertainmentDetails />} />
 
-        {/* ─── Payment Flow ─── */}
-        <Route
-          path="/payment-options/:bookingId"
-          element={<PaymentOptions />}
-        />
-        <Route
-          path="/installment-plan/:bookingId"
-          element={<InstallmentPlan />}
-        />
-        <Route
-          path="/installment-status/:bookingId"
-          element={<InstallmentStatus />}
-        />
-        <Route path="/invoice/:paymentId" element={<Invoice />} />
-        <Route path="/payment-success" element={<PaymentSuccess />} />
-        <Route path="/payment-cancel" element={<PaymentCancel />} />
-        <Route path="/refund/:bookingId" element={<Refund />} />
-        <Route path="/refund-success/:bookingId" element={<RefundSuccess />} />
-        <Route path="/refund-status/:bookingId" element={<RefundStatus />} />
+        {/* ─── Protected Routes ─── */}
+        <Route path="/admin-dashboard" element={
+          <ProtectedRoute requireAdmin>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/customizePackage" element={
+          <ProtectedRoute>
+            <CustomizePackage />
+          </ProtectedRoute>
+        } />
+        <Route path="/customize-package" element={
+          <ProtectedRoute>
+            <CustomizePackage />
+          </ProtectedRoute>
+        } />
+        <Route path="/myPackages" element={
+          <ProtectedRoute>
+            <MyCustomPackages />
+          </ProtectedRoute>
+        } />
+        <Route path="/book-package/:id" element={
+          <ProtectedRoute>
+            <BookPackage />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-bookings" element={
+          <ProtectedRoute>
+            <MyBookings />
+          </ProtectedRoute>
+        } />
+        <Route path="/confirmedBookings" element={
+          <ProtectedRoute>
+            <ConfirmedBookings />
+          </ProtectedRoute>
+        } />
+        <Route path="/my-history" element={
+          <ProtectedRoute>
+            <MyHistory />
+          </ProtectedRoute>
+        } />
+        <Route path="/write-review" element={
+          <ProtectedRoute>
+            <WriteReview />
+          </ProtectedRoute>
+        } />
+        <Route path="/book-hotel/:id" element={
+          <ProtectedRoute>
+            <BookHotel />
+          </ProtectedRoute>
+        } />
+        <Route path="/book-flight/:id" element={
+          <ProtectedRoute>
+            <BookFlight />
+          </ProtectedRoute>
+        } />
+
+        {/* ─── Payment Flow Routes ─── */}
+        <Route path="/payment-options/:bookingId" element={
+          <ProtectedRoute>
+            <PaymentOptions />
+          </ProtectedRoute>
+        } />
+        <Route path="/installment-plan/:bookingId" element={
+          <ProtectedRoute>
+            <InstallmentPlan />
+          </ProtectedRoute>
+        } />
+        <Route path="/installment-status/:bookingId" element={
+          <ProtectedRoute>
+            <InstallmentStatus />
+          </ProtectedRoute>
+        } />
+        <Route path="/invoice/:paymentId" element={
+          <ProtectedRoute>
+            <Invoice />
+          </ProtectedRoute>
+        } />
+        <Route path="/payment-success" element={
+          <ProtectedRoute>
+            <PaymentSuccess />
+          </ProtectedRoute>
+        } />
+        <Route path="/payment-cancel" element={
+          <ProtectedRoute>
+            <PaymentCancel />
+          </ProtectedRoute>
+        } />
+        <Route path="/refund/:bookingId" element={
+          <ProtectedRoute>
+            <Refund />
+          </ProtectedRoute>
+        } />
+        <Route path="/refund-success/:bookingId" element={
+          <ProtectedRoute>
+            <RefundSuccess />
+          </ProtectedRoute>
+        } />
+        <Route path="/refund-status/:bookingId" element={
+          <ProtectedRoute>
+            <RefundStatus />
+          </ProtectedRoute>
+        } />
       </Routes>
 
       {/* Modal overlay for MyBookings if navigated with a background */}
@@ -117,7 +182,9 @@ function AppRoutes() {
           <Route
             path="/myBookings"
             element={
-              <MyBookingsModal onClose={() => window.history.back()} />
+              <ProtectedRoute>
+                <MyBookingsModal onClose={() => window.history.back()} />
+              </ProtectedRoute>
             }
           />
         </Routes>

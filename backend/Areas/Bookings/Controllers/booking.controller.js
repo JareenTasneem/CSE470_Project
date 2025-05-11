@@ -226,36 +226,6 @@ exports.cancelBooking = async (req, res) => {
         await hotelDoc.save();
       }
     }
-    // after your other exports, e.g. exports.cancelBooking
-exports.getBookingById = async (req, res) => {
-  try {
-    const booking = await Booking.findById(req.params.bookingId)
-      .populate("flights")
-      .populate("hotels")
-      .populate("entertainments")
-      .populate("tour_package")
-      .populate({
-        path: "custom_package",
-        populate: [
-          { path: "flights" },
-          { path: "hotels" },
-          { path: "entertainments" }
-        ]
-      });
-
-    if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
-    }
-    res.json(booking);
-  } catch (err) {
-    console.error("Error fetching booking by ID:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-    // for (let entertainmentId of booking.entertainments) {
-    //   await Entertainment.markAsAvailable(entertainmentId);
-    // }
 
     // ✅ INCREMENT HOTEL ROOMS FOR CUSTOM PACK HOTELS
     if (booking.custom_package && booking.hotels.length > 0) {
@@ -446,7 +416,7 @@ exports.bookCustomPackageDirect = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-// <…> at the bottom, after your other exports:
+
 exports.getBookingById = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.bookingId)
@@ -473,7 +443,175 @@ exports.getBookingById = async (req, res) => {
   }
 };
 
+// ────────────── ANALYTICS ENDPOINT ──────────────
+exports.getAnalytics = async (req, res) => {
+  try {
+    // 1. Total sales (confirmed bookings only)
+    const totalSalesAgg = await Booking.aggregate([
+      { $match: { status: "Confirmed" } },
+      { $group: { _id: null, total: { $sum: "$total_price" }, count: { $sum: 1 } } }
+    ]);
+    const totalSales = totalSalesAgg[0]?.total || 0;
+    const totalBookings = totalSalesAgg[0]?.count || 0;
 
+    // 2. Bookings by type
+    const bookingsByType = await Booking.aggregate([
+      { $match: { status: "Confirmed" } },
+      { $facet: {
+        tour: [ { $match: { tour_package: { $ne: null } } }, { $count: "count" } ],
+        hotel: [ { $match: { hotel: { $ne: null } } }, { $count: "count" } ],
+        flight: [ { $match: { flight: { $ne: null } } }, { $count: "count" } ],
+        custom: [ { $match: { custom_package: { $ne: null } } }, { $count: "count" } ]
+      }}
+    ]);
+    const byType = bookingsByType[0] || {};
+
+    // 3. Most booked destinations (tour packages)
+    const topDestAgg = await Booking.aggregate([
+      { $match: { status: "Confirmed", tour_package: { $ne: null } } },
+      { $lookup: {
+        from: "tourpackages",
+        localField: "tour_package",
+        foreignField: "_id",
+        as: "package"
+      }},
+      { $unwind: "$package" },
+      { $group: { _id: "$package.location", count: { $sum: 1 }, revenue: { $sum: "$total_price" } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
+
+    // 4. Active users (users with confirmed bookings in last 30 days)
+    const lastMonth = new Date();
+    lastMonth.setDate(lastMonth.getDate() - 30);
+    const activeUsers = await Booking.distinct("user", { status: "Confirmed", createdAt: { $gte: lastMonth } });
+
+    // 5. Monthly sales trend (last 12 months)
+    const monthlyTrend = await Booking.aggregate([
+      { $match: { status: "Confirmed", createdAt: { $gte: new Date(new Date().setMonth(new Date().getMonth() - 11)) } } },
+      { $group: {
+        _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+        total: { $sum: "$total_price" },
+        count: { $sum: 1 }
+      }},
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    // 6. Peak travel months (by booking count)
+    const peakMonths = await Booking.aggregate([
+      { $match: { status: "Confirmed" } },
+      { $group: {
+        _id: { month: { $month: "$startDate" } },
+        count: { $sum: 1 }
+      }},
+      { $sort: { count: -1 } },
+      { $limit: 3 }
+    ]);
+
+    // 7. Bookings by membership tier
+    const bookingsByTier = await Booking.aggregate([
+      { $match: { status: "Confirmed" } },
+      { $lookup: {
+        from: "users",
+        localField: "user",
+        foreignField: "_id",
+        as: "user"
+      }},
+      { $unwind: "$user" },
+      { $group: { _id: "$user.membership_tier", count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+
+    // 8. Cancellation rate
+    const totalCancelled = await Booking.countDocuments({ status: "Cancelled" });
+    const cancellationRate = totalBookings > 0 ? (totalCancelled / (totalBookings + totalCancelled)) * 100 : 0;
+
+    // 9. Average booking value
+    const avgBookingValue = totalBookings > 0 ? totalSales / totalBookings : 0;
+
+    // 10. Booking lead time (days between booking and startDate)
+    const leadTimes = await Booking.aggregate([
+      { $match: { status: "Confirmed", startDate: { $ne: null } } },
+      { $project: {
+        diffDays: { $divide: [ { $subtract: [ "$startDate", "$createdAt" ] }, 1000 * 60 * 60 * 24 ] }
+      }}
+    ]);
+    const avgLeadTime = leadTimes.length > 0 ? (leadTimes.reduce((sum, l) => sum + l.diffDays, 0) / leadTimes.length) : 0;
+
+    // 11. Bookings by day of week
+    const bookingsByDayOfWeek = await Booking.aggregate([
+      { $match: { status: "Confirmed" } },
+      { $project: { dayOfWeek: { $dayOfWeek: "$createdAt" } } },
+      { $group: { _id: "$dayOfWeek", count: { $sum: 1 } } },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // 12. Refund rate and total refunded
+    const totalRefunded = await Booking.aggregate([
+      { $match: { refundStatus: { $in: ["processed", "approved"] } } },
+      { $group: { _id: null, total: { $sum: "$refundAmount" }, count: { $sum: 1 } } }
+    ]);
+    const refundRate = totalBookings > 0 ? (totalRefunded[0]?.count || 0) / totalBookings * 100 : 0;
+    const totalRefundAmount = totalRefunded[0]?.total || 0;
+
+    // 13. Average rating and review count (all types)
+    const Review = require("../../Reviews/Models/Review");
+    const avgRatingAgg = await Review.aggregate([
+      { $group: { _id: null, avg: { $avg: "$rating" }, count: { $sum: 1 } } }
+    ]);
+    const avgRating = avgRatingAgg[0]?.avg || 0;
+    const reviewCount = avgRatingAgg[0]?.count || 0;
+
+    // 14. Hotel occupancy rate (average rooms booked / total rooms)
+    const hotels = await Hotel.find();
+    let totalRooms = 0, totalRoomsAvailable = 0;
+    hotels.forEach(h => {
+      const roomSum = h.room_types.reduce((sum, rt) => sum + (rt.count || 0), 0);
+      totalRooms += roomSum;
+      totalRoomsAvailable += h.rooms_available || 0;
+    });
+    const occupancyRate = totalRooms > 0 ? ((totalRooms - totalRoomsAvailable) / totalRooms) * 100 : 0;
+
+    // 15. Flight seat utilization (average seats booked / total seats)
+    const flights = await Flight.find();
+    let totalSeats = 0, totalSeatsAvailable = 0;
+    flights.forEach(f => {
+      const seatSum = f.seat_types.reduce((sum, st) => sum + (st.count || 0), 0);
+      totalSeats += f.total_seats || 0;
+      totalSeatsAvailable += seatSum;
+    });
+    const seatUtilization = totalSeats > 0 ? ((totalSeats - totalSeatsAvailable) / totalSeats) * 100 : 0;
+
+    res.json({
+      totalSales,
+      totalBookings,
+      bookingsByType: {
+        tour: byType.tour?.[0]?.count || 0,
+        hotel: byType.hotel?.[0]?.count || 0,
+        flight: byType.flight?.[0]?.count || 0,
+        custom: byType.custom?.[0]?.count || 0,
+      },
+      topDestinations: topDestAgg,
+      activeUsers: activeUsers.length,
+      monthlyTrend,
+      peakMonths,
+      bookingsByTier,
+      cancellationRate,
+      avgBookingValue,
+      avgLeadTime,
+      bookingsByDayOfWeek,
+      refundRate,
+      totalRefundAmount,
+      avgRating,
+      reviewCount,
+      occupancyRate,
+      seatUtilization
+    });
+  } catch (err) {
+    console.error("Error in getAnalytics:", err);
+    res.status(500).json({ message: "Failed to fetch analytics" });
+  }
+};
 
 module.exports = {
   createBooking: exports.createBooking,
@@ -481,5 +619,6 @@ module.exports = {
   cancelBooking: exports.cancelBooking,
   bookFlightDirect: exports.bookFlightDirect,
   bookCustomPackageDirect: exports.bookCustomPackageDirect,
-  getBookingById: exports.getBookingById, // ✅ add this line
+  getBookingById: exports.getBookingById,
+  getAnalytics: exports.getAnalytics
 };

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import UserManagement from "./UserManagement";
@@ -16,6 +17,18 @@ const PAGES = {
 
 export default function AdminDashboard() {
   const [page, setPage] = useState("users");
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (location.pathname !== "/admin-dashboard") {
+        navigate("/admin-dashboard", { replace: true });
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [location, navigate]);
 
   return (
     <div className="dashboard">

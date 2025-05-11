@@ -20,6 +20,7 @@ const {
   bookFlightDirect,
   bookCustomPackageDirect,
   getBookingById,
+  getAnalytics,
 } = require("../Controllers/booking.controller");
 
 /* ─────────────────── ROUTES ─────────────────── */
@@ -33,7 +34,17 @@ router.post("/flight", auth, bookFlightDirect);
 // 3️ Get bookings for logged‑in user
 router.get("/user", auth, getUserBookings);
 
-// GET a single booking by ID
+// Admin analytics endpoint - MUST be before /:bookingId route
+router.get("/analytics", auth, (req, res, next) => {
+  // Only allow admin users
+  if (!req.user || req.user.user_type !== "Admin") {
+    return res.status(403).json({ message: "Forbidden: Admins only" });
+  }
+  // Delegate to controller
+  return getAnalytics(req, res, next);
+});
+
+// GET a single booking by ID - MUST be after /analytics route
 router.get("/:bookingId", auth, getBookingById);
 
 // 4️ Cancel booking

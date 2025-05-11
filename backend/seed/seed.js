@@ -287,7 +287,7 @@ console.log("✅ 300 flights seeded with business & economy seats");
 
     // 6) Seed Bookings
     const bookings = [];
-    for (let i = 0; i < 300; i++) {
+    for (let i = 0; i < 3000; i++) {
       const user = faker.helpers.arrayElement(insertedUsers);
       const pkg = faker.helpers.arrayElement(insertedPackages);
       const hotel = faker.helpers.arrayElement(insertedHotels);
@@ -299,12 +299,12 @@ console.log("✅ 300 flights seeded with business & economy seats");
       let refundReason = "";
       let refundAmount = 0;
       let refundedAt = null;
-      if (i < 30) { // 10% requested
+      if (i < 300) {
         refundRequested = true;
         refundStatus = "requested";
         refundReason = "Change of plans";
         refundAmount = Math.floor(pkg.price * 0.75);
-      } else if (i >= 30 && i < 45) { // 5% processed
+      } else if (i >= 300 && i < 450) {
         refundRequested = true;
         refundStatus = "processed";
         refundReason = "Medical emergency";
@@ -325,10 +325,12 @@ console.log("✅ 300 flights seeded with business & economy seats");
         refundReason,
         refundAmount,
         refundedAt,
+        createdAt: faker.date.between({ from: '2023-01-01', to: '2024-12-31' }),
+        startDate: faker.date.between({ from: '2023-01-01', to: '2024-12-31' }),
       });
     }
     const insertedBookings = await Booking.insertMany(bookings);
-    console.log("✅ 300 bookings seeded");
+    console.log("✅ 3000 bookings seeded");
 
     // 7) Seed Payments
     const payments = [];

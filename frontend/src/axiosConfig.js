@@ -5,6 +5,7 @@ import { getAuthToken } from './contexts/AuthContext';
 // Create an Axios instance with the base URL of your API
 const instance = axios.create({
   baseURL: "http://localhost:5000/api",
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -20,6 +21,26 @@ instance.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === 'ERR_NETWORK') {
+      console.error('Network error - Please check if the server is running');
+      return Promise.reject(new Error('Unable to connect to the server. Please try again later.'));
+    }
+    
+    if (error.response?.status === 401) {
+      // Clear local storage and redirect to login
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    
     return Promise.reject(error);
   }
 );
