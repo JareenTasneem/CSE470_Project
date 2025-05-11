@@ -21,6 +21,8 @@ const {
   bookCustomPackageDirect,
   getBookingById,
   getAnalytics,
+  getAllBookings,
+  updateBookingStatus,
 } = require("../Controllers/booking.controller");
 
 /* ─────────────────── ROUTES ─────────────────── */
@@ -178,5 +180,20 @@ router.post("/bookPackage", auth, async (req, res) => {
     res.status(500).json({ message: "Failed to book the package" });
   }
 });
+
+// Admin routes
+router.get("/admin/all", auth, (req, res, next) => {
+  if (req.user.user_type !== "Admin") {
+    return res.status(403).json({ message: "Access denied. Admin only." });
+  }
+  next();
+}, getAllBookings);
+
+router.patch("/admin/:bookingId/status", auth, (req, res, next) => {
+  if (req.user.user_type !== "Admin") {
+    return res.status(403).json({ message: "Access denied. Admin only." });
+  }
+  next();
+}, updateBookingStatus);
 
 module.exports = router;

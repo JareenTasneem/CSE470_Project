@@ -613,6 +613,154 @@ exports.getAnalytics = async (req, res) => {
   }
 };
 
+// Get all bookings for admin with filtering
+exports.getAllBookings = async (req, res) => {
+  try {
+    const { status, customerName, bookingId, details } = req.query;
+    const query = {};
+
+    // Status filter
+    if (status) {
+      query.status = status;
+    }
+
+    // Customer name filter
+    if (customerName) {
+      query.$or = [
+        { 'user.name': { $regex: customerName, $options: 'i' } },
+        { name: { $regex: customerName, $options: 'i' } }
+      ];
+    }
+
+    // Booking ID filter
+    if (bookingId) {
+      query.booking_id = { $regex: bookingId, $options: 'i' };
+    }
+
+    // Details filter
+    if (details) {
+      query.$or = [
+        { 'tour_package.package_title': { $regex: details, $options: 'i' } },
+        { 'flightMeta.airline_name': { $regex: details, $options: 'i' } },
+        { 'hotelMeta.hotel_name': { $regex: details, $options: 'i' } },
+        { 'custom_package.title': { $regex: details, $options: 'i' } }
+      ];
+    }
+
+    // Debug log
+    console.log('Query:', JSON.stringify(query, null, 2));
+
+    const bookings = await Booking.find(query)
+      .populate('user', 'name email')
+      .populate('tour_package', 'package_title')
+      .populate('flight', 'airline_name')
+      .populate('hotel', 'hotel_name')
+      .populate('custom_package', 'title')
+      .sort({ createdAt: -1 });
+
+    // Debug log
+    console.log('Found bookings:', bookings.length);
+
+    res.json(bookings);
+  } catch (error) {
+    console.error('Error in getAllBookings:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update booking status (admin only)
+exports.updateBookingStatus = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { status, reason } = req.body;
+
+    console.log('updateBookingStatus called with:', {
+      bookingId,
+      status,
+      reason,
+      user: req.user
+    });
+
+    if (!["Pending", "Confirmed", "Cancelled"].includes(status)) {
+      console.log('Invalid status provided:', status);
+      return res.status(400).json({ message: "Invalid status" });
+    }
+
+    console.log('Finding booking with ID:', bookingId);
+    const booking = await Booking.findById(bookingId)
+      .populate("flights")
+      .populate("hotels")
+      .populate("tour_package");
+
+    if (!booking) {
+      console.log('Booking not found with ID:', bookingId);
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    console.log('Found booking:', {
+      id: booking._id,
+      currentStatus: booking.status,
+      newStatus: status,
+      hasTourPackage: !!booking.tour_package,
+      hasFlights: booking.flights?.length > 0,
+      hasHotels: booking.hotels?.length > 0
+    });
+
+    const oldStatus = booking.status;
+    booking.status = status;
+
+    // Handle status change logic
+    if (oldStatus === "Confirmed" && status === "Cancelled") {
+      console.log('Handling cancellation of confirmed booking');
+      
+      if (booking.tour_package) {
+        console.log('Updating tour package availability');
+        booking.tour_package.availability += 1;
+        await booking.tour_package.save();
+      }
+      
+      if (booking.flights?.length > 0) {
+        console.log('Restoring flight seats');
+        for (const flight of booking.flights) {
+          await Flight.incrementSeats(flight._id);
+        }
+      }
+
+      if (booking.hotels?.length > 0) {
+        console.log('Restoring hotel rooms');
+        for (const hotel of booking.hotels) {
+          await Hotel.incrementRooms(hotel._id);
+        }
+      }
+
+      if (reason) {
+        console.log('Adding cancellation reason:', reason);
+        booking.cancellationReason = reason;
+      }
+    }
+
+    console.log('Saving updated booking');
+    await booking.save();
+    
+    console.log('Booking status updated successfully');
+    res.status(200).json({ 
+      message: "Booking status updated successfully", 
+      booking: {
+        _id: booking._id,
+        status: booking.status,
+        cancellationReason: booking.cancellationReason
+      }
+    });
+  } catch (error) {
+    console.error("Error updating booking status:", error);
+    console.error("Error stack:", error.stack);
+    res.status(500).json({ 
+      message: "Server error",
+      error: error.message 
+    });
+  }
+};
+
 module.exports = {
   createBooking: exports.createBooking,
   getUserBookings: exports.getUserBookings,
@@ -620,5 +768,7 @@ module.exports = {
   bookFlightDirect: exports.bookFlightDirect,
   bookCustomPackageDirect: exports.bookCustomPackageDirect,
   getBookingById: exports.getBookingById,
-  getAnalytics: exports.getAnalytics
+  getAnalytics: exports.getAnalytics,
+  getAllBookings: exports.getAllBookings,
+  updateBookingStatus: exports.updateBookingStatus
 };

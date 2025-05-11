@@ -19,7 +19,8 @@ export const ProtectedRoute = ({ children, requireAdmin = false }) => {
   if (
     user &&
     user.user_type === 'Admin' &&
-    !['/admin-dashboard', '/admin-profilecustomization'].includes(location.pathname)
+    !['/admin-dashboard', '/admin-profilecustomization', '/bookings/admin/all', '/bookings/admin/:bookingId/status'].includes(location.pathname) &&
+    !location.pathname.startsWith('/bookings/admin/')
   ) {
     return <Navigate to="/admin-dashboard" replace />;
   }

@@ -153,34 +153,9 @@ const TravelPack = () => {
                     </Link>
                   </li>
                   <li>
-                    <button
-                      onClick={() => navigate("/my-history")}
-                      style={{
-                        color: "white",
-                        textDecoration: "none",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: 0,
-                      }}
-                    >
+                    <Link to="/my-history" style={{ color: "white", textDecoration: "none" }}>
                       Reviews
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      onClick={() => navigate("/confirmedBookings")}
-                      style={{
-                        color: "white",
-                        textDecoration: "none",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: 0,
-                      }}
-                    >
-                      Confirmed Bookings
-                    </button>
+                    </Link>
                   </li>
                 </ul>
               </nav>
