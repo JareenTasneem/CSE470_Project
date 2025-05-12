@@ -38,7 +38,7 @@ const RefundStatus = () => {
     statusMsg = "Your refund has been approved and will be issued soon.";
     statusColor = "#28a745";
   } else if (booking.refundStatus === "processed") {
-    statusMsg = "Your refund has been processed.";
+    statusMsg = "Refunded";
     statusColor = "#28a745";
   } else if (booking.refundStatus === "rejected") {
     statusMsg = "Your refund request was rejected.";

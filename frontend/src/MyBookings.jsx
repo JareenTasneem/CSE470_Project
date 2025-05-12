@@ -186,18 +186,18 @@ const MyBookings = ({ setShowModal }) => {
                 {/* … any other details you had … */}
 
                 <div style={{ marginTop: "20px" }}>
-                  {booking.refundRequested ? (
+                  {(booking.refundStatus === "processed" || booking.refundRequested) ? (
                     <>
                       <span style={{
                         display: 'inline-block',
-                        backgroundColor: '#ffe066',
-                        color: '#856404',
+                        backgroundColor: booking.refundStatus === "processed" ? '#28a745' : '#ffe066',
+                        color: booking.refundStatus === "processed" ? '#fff' : '#856404',
                         padding: '8px 16px',
                         borderRadius: '4px',
                         fontWeight: 600,
                         marginRight: '10px',
                       }}>
-                        Refund Requested
+                        {booking.refundStatus === "processed" ? 'Refunded' : 'Refund Requested'}
                       </span>
                       <button
                         onClick={() => navigate(`/refund-status/${booking._id}`)}

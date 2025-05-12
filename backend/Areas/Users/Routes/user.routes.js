@@ -14,6 +14,8 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../Controllers/user.controller");
 const auth = require("../../../middlewares/auth"); // Authentication middleware - path adjusted
+const User = require("../Models/User");
+const { isAdmin } = require("../../../middlewares/adminAuth");
 
 // Public routes
 router.post("/register", userController.registerUser);
@@ -27,5 +29,30 @@ router.delete("/profile/photo", auth, userController.deleteProfilePhoto);
 
 // Add a public route to get all users
 router.get('/', userController.getAllUsers);
+
+// Search users by name or email (case-insensitive)
+router.get("/search", async (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.status(400).json({ message: "Query required" });
+
+  try {
+    const users = await User.find({
+      $or: [
+        { name: { $regex: q, $options: "i" } },
+        { email: { $regex: q, $options: "i" } }
+      ]
+    }).select("name email");
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: "Search failed", error: err.message });
+  }
+});
+
+// Admin user management routes
+router.get('/admin/all', isAdmin, userController.getAllUsersAdmin);
+router.get('/admin/:id', isAdmin, userController.getUserByIdAdmin);
+router.put('/admin/:id', isAdmin, userController.updateUserAdmin);
+router.put('/admin/:id/ban', isAdmin, userController.banUserAdmin);
+router.delete('/admin/:id', isAdmin, userController.deleteUserAdmin);
 
 module.exports = router;

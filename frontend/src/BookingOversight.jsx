@@ -98,6 +98,24 @@ export default function BookingOversight() {
     }
   };
 
+  const handleUpdateRefund = async ({ refundStatus, refundAmount }) => {
+    if (!selectedBooking) return;
+    try {
+      console.log('Updating refund for booking:', selectedBooking._id, 'with status:', refundStatus, 'and amount:', refundAmount);
+      await axios.patch(
+        `/bookings/admin/${selectedBooking._id}/refund`,
+        { refundStatus, refundAmount },
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+      await fetchBookings();
+      console.log('Bookings after refund update:', bookings);
+      handleCloseModal();
+    } catch (err) {
+      console.error('Refund update error:', err);
+      alert(err.response?.data?.message || "Failed to update refund status");
+    }
+  };
+
   const getStatusColor = (status) => {
     const statusMap = {
       Pending: "bg-amber-100 text-amber-800 border border-amber-200",
@@ -214,67 +232,74 @@ export default function BookingOversight() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {bookings.map((booking) => (
-                  <tr 
-                    key={booking._id} 
-                    className="hover:bg-gray-50 transition-colors duration-150 ease-in-out"
-                    ref={el => rowRefs.current[booking._id] = el}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{booking.booking_id}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900">{booking.user?.name || "N/A"}</div>
-                        <div className="text-xs text-gray-500 truncate max-w-[180px]">{booking.user?.email || "N/A"}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {booking.tour_package?.package_title || booking.flightMeta?.airline_name || booking.hotelMeta?.hotel_name || "Custom Package"}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-medium">
-                          ${booking.total_price}
+                {bookings.map((booking) => {
+                  console.log('Rendering booking row:', booking._id, 'refundStatus:', booking.refundStatus);
+                  return (
+                    <tr 
+                      key={booking._id} 
+                      className="hover:bg-gray-50 transition-colors duration-150 ease-in-out"
+                      ref={el => rowRefs.current[booking._id] = el}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{booking.booking_id}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="ml-3">
+                          <div className="text-sm font-medium text-gray-900">{booking.user?.name || "N/A"}</div>
+                          <div className="text-xs text-gray-500 truncate max-w-[180px]">{booking.user?.email || "N/A"}</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900">
+                          {booking.tour_package?.package_title || booking.flightMeta?.airline_name || booking.hotelMeta?.hotel_name || "Custom Package"}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-medium">
+                            ${booking.total_price}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className={`h-2.5 w-2.5 rounded-full mr-2 ${getStatusDot(booking.status)}`}></div>
+                          <span className={`px-2.5 py-1 inline-flex text-xs rounded-md font-medium ${getStatusColor(booking.status)}`}>
+                            {booking.status}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2.5 py-1 inline-flex text-xs rounded-md font-medium ${
+                          booking.refundStatus === "requested" ? "bg-yellow-100 text-yellow-800 border border-yellow-200" :
+                          booking.refundStatus === "approved" ? "bg-green-100 text-green-800 border border-green-200" :
+                          booking.refundStatus === "processed" ? "bg-emerald-100 text-emerald-800 border border-emerald-200" :
+                          booking.refundStatus === "rejected" ? "bg-rose-100 text-rose-800 border border-rose-200" :
+                          "bg-gray-100 text-gray-800 border border-gray-200"
+                        }`}>
+                          {booking.refundStatus === "processed"
+                            ? "Refunded"
+                            : booking.refundStatus
+                              ? booking.refundStatus.charAt(0).toUpperCase() + booking.refundStatus.slice(1)
+                              : "None"}
                         </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className={`h-2.5 w-2.5 rounded-full mr-2 ${getStatusDot(booking.status)}`}></div>
-                        <span className={`px-2.5 py-1 inline-flex text-xs rounded-md font-medium ${getStatusColor(booking.status)}`}>
-                          {booking.status}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2.5 py-1 inline-flex text-xs rounded-md font-medium ${
-                        booking.refundStatus === "requested" ? "bg-yellow-100 text-yellow-800 border border-yellow-200" :
-                        booking.refundStatus === "approved" ? "bg-green-100 text-green-800 border border-green-200" :
-                        booking.refundStatus === "processed" ? "bg-emerald-100 text-emerald-800 border border-emerald-200" :
-                        booking.refundStatus === "rejected" ? "bg-rose-100 text-rose-800 border border-rose-200" :
-                        "bg-gray-100 text-gray-800 border border-gray-200"
-                      }`}>
-                        {booking.refundStatus ? booking.refundStatus.charAt(0).toUpperCase() + booking.refundStatus.slice(1) : "None"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-700">{format(new Date(booking.createdAt), "MMM d, yyyy")}</div>
-                      <div className="text-xs text-gray-500">{format(new Date(booking.createdAt), "h:mm a")}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <button 
-                        onClick={() => handleOpenModal(booking, booking._id)} 
-                        className="inline-flex items-center px-3 py-2 border border-indigo-100 text-sm font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-150"
-                      >
-                        <svg style={{width:16, height:16}} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                        </svg>
-                        Manage
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-700">{format(new Date(booking.createdAt), "MMM d, yyyy")}</div>
+                        <div className="text-xs text-gray-500">{format(new Date(booking.createdAt), "h:mm a")}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <button 
+                          onClick={() => handleOpenModal(booking, booking._id)} 
+                          className="inline-flex items-center px-3 py-2 border border-indigo-100 text-sm font-medium rounded-lg text-indigo-700 bg-indigo-50 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors duration-150"
+                        >
+                          <svg style={{width:16, height:16}} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                          </svg>
+                          Manage
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -287,6 +312,7 @@ export default function BookingOversight() {
           onUpdate={handleUpdateStatus}
           statusOptions={STATUS_OPTIONS}
           position={modalPosition}
+          onUpdateRefund={handleUpdateRefund}
         />
       </div>
     </div>

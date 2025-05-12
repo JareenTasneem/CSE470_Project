@@ -45,11 +45,14 @@ export default function BookingModal({
   onClose,
   onUpdate,
   statusOptions = [],
+  onUpdateRefund,
 }) {
   const [status, setStatus] = useState(booking?.status || 'Pending');
   const [reason, setReason] = useState('');
   const [showDetails, setShowDetails] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [refundStatus, setRefundStatus] = useState(booking?.refundStatus || 'none');
+  const [refundAmount, setRefundAmount] = useState(booking?.refundAmount || 0);
 
   useEffect(() => {
     if (booking) {
@@ -57,6 +60,8 @@ export default function BookingModal({
       setReason('');
       setShowDetails(false);
       setIsSubmitting(false);
+      setRefundStatus(booking.refundStatus || 'none');
+      setRefundAmount(booking.refundAmount || 0);
     }
   }, [booking]);
 
@@ -70,6 +75,18 @@ export default function BookingModal({
       await onUpdate({ status, reason });
     } catch (error) {
       console.error("Error updating booking:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleUpdateRefund = async () => {
+    setIsSubmitting(true);
+    try {
+      console.log('BookingModal: Sending refundStatus:', refundStatus, 'refundAmount:', refundAmount);
+      await onUpdateRefund({ refundStatus, refundAmount });
+    } catch (error) {
+      console.error("Error updating refund:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -207,6 +224,38 @@ export default function BookingModal({
             onChange={e => setReason(e.target.value)}
             placeholder="Add notes or reason for status change"
           />
+        </div>
+        <div style={{marginBottom: 20}}>
+          <div style={{fontWeight: 600, color: '#444', marginBottom: 8}}>Refund Management</div>
+          <div style={{display: 'flex', gap: 8, marginBottom: 12}}>
+            <select value={refundStatus} onChange={e => setRefundStatus(e.target.value)} style={{padding: 8, borderRadius: 6, border: '1.5px solid #e5e7eb'}}>
+              <option value="none">None</option>
+              <option value="requested">Requested</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+              <option value="processed">Processed</option>
+            </select>
+            <input type="number" min="0" step="0.01" value={refundAmount} onChange={e => setRefundAmount(e.target.value)} style={{padding: 8, borderRadius: 6, border: '1.5px solid #e5e7eb', width: 120}} placeholder="Refund Amount" />
+          </div>
+          <button
+            disabled={isSubmitting}
+            onClick={handleUpdateRefund}
+            style={{
+              padding: '8px 18px',
+              borderRadius: 8,
+              background: '#10b981',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: 15,
+              border: 'none',
+              boxShadow: '0 2px 8px rgba(16,185,129,0.08)',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              opacity: isSubmitting ? 0.6 : 1,
+              marginTop: 6
+            }}
+          >
+            {isSubmitting ? 'Updating...' : 'Update Refund'}
+          </button>
         </div>
         <div style={{display: 'flex', justifyContent: 'flex-end', gap: 10}}>
           <button

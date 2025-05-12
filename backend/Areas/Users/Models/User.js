@@ -104,6 +104,10 @@ const userSchema = new mongoose.Schema(
         default: "en",
       },
     },
+    banned: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

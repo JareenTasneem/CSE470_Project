@@ -65,13 +65,9 @@ app.use("/api/loyalty", loyaltyRoutes);
 const maintenanceRoutes = require('./Areas/Maintenance/Routes/maintenance.routes');
 app.use('/api/maintenance', maintenanceRoutes);
 
-// Add promotional email routes
-const promotionalEmailRoutes = require('./Areas/Notifications/Routes/promotionalEmailRoutes');
-app.use('/api/promotional-emails', promotionalEmailRoutes);
-
-// Start the email scheduler
-const { startScheduler } = require('./services/emailScheduler');
-startScheduler();
+// Add special notice routes
+const specialNoticeRoutes = require("./Areas/Notifications/Routes/specialNoticeRoutes");
+app.use("/api/special-notices", specialNoticeRoutes);
 
 app.get("/", (req, res) => {
   res.send("🌍 Travel Agency API is running!");

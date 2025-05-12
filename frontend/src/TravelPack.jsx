@@ -13,6 +13,8 @@ const TravelPack = () => {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [personalized, setPersonalized] = useState([]);
+  const [notices, setNotices] = useState([]);
+  const [showNotices, setShowNotices] = useState(false);
 
   useEffect(() => {
     if (user && user.token) {
@@ -37,6 +39,12 @@ const TravelPack = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (user?._id) {
+      axios.get(`/special-notices/for/${user._id}`).then(res => setNotices(res.data));
+    }
+  }, [user]);
+
   return (
     <>
       <MaintenanceBanner />
@@ -54,6 +62,39 @@ const TravelPack = () => {
                     >
                       {user.name && user.name.trim() !== "" ? user.name : "Profile"}
                     </span>
+                  </li>
+                  <li style={{ position: "relative", display: "inline-block", marginRight: 10 }}>
+                    <button
+                      className="notification-bell"
+                      onClick={() => setShowNotices((v) => !v)}
+                      style={{ fontSize: 20, background: "none", border: "none", cursor: "pointer" }}
+                      title="Show Notifications"
+                    >
+                      🔔
+                      {notices.length > 0 && (
+                        <span style={{ color: "red", fontWeight: "bold", marginLeft: 2 }}>
+                          {notices.length}
+                        </span>
+                      )}
+                    </button>
+                    {showNotices && (
+                      <div style={{
+                        position: "absolute", right: 0, top: "2.5em", background: "#fff", border: "1px solid #ccc", borderRadius: 6, minWidth: 220, zIndex: 1000, boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+                      }}>
+                        <div style={{ padding: 8, borderBottom: "1px solid #eee", fontWeight: "bold" }}>Notifications</div>
+                        {notices.length === 0 ? (
+                          <div style={{ padding: 8 }}>No notifications</div>
+                        ) : (
+                          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                            {notices.map((notice) => (
+                              <li key={notice._id} style={{ padding: 8, borderBottom: "1px solid #eee" }}>
+                                {notice.message}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
                   </li>
                   <li>
                     <button

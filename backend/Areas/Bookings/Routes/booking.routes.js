@@ -23,6 +23,7 @@ const {
   getAnalytics,
   getAllBookings,
   updateBookingStatus,
+  updateRefundStatus,
 } = require("../Controllers/booking.controller");
 
 /* ─────────────────── ROUTES ─────────────────── */
@@ -195,5 +196,12 @@ router.patch("/admin/:bookingId/status", auth, (req, res, next) => {
   }
   next();
 }, updateBookingStatus);
+
+router.patch("/admin/:bookingId/refund", auth, (req, res, next) => {
+  if (req.user.user_type !== "Admin") {
+    return res.status(403).json({ message: "Access denied. Admin only." });
+  }
+  next();
+}, updateRefundStatus);
 
 module.exports = router;

@@ -761,6 +761,38 @@ exports.updateBookingStatus = async (req, res) => {
   }
 };
 
+// Admin: Update refund status and amount
+exports.updateRefundStatus = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { refundStatus, refundAmount } = req.body;
+
+    if (!['none', 'requested', 'approved', 'rejected', 'processed'].includes(refundStatus)) {
+      return res.status(400).json({ message: 'Invalid refund status' });
+    }
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    booking.refundStatus = refundStatus;
+    if (refundAmount !== undefined) {
+      booking.refundAmount = refundAmount;
+    }
+    if (refundStatus === 'processed') {
+      booking.refundedAt = new Date();
+    }
+    await booking.save();
+    console.log('[ADMIN REFUND UPDATE] Booking', booking._id, 'refundStatus:', booking.refundStatus, 'refundAmount:', booking.refundAmount);
+
+    res.json({ message: 'Refund status updated', booking });
+  } catch (error) {
+    console.error('Error updating refund status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   createBooking: exports.createBooking,
   getUserBookings: exports.getUserBookings,
@@ -770,5 +802,6 @@ module.exports = {
   getBookingById: exports.getBookingById,
   getAnalytics: exports.getAnalytics,
   getAllBookings: exports.getAllBookings,
-  updateBookingStatus: exports.updateBookingStatus
+  updateBookingStatus: exports.updateBookingStatus,
+  updateRefundStatus: exports.updateRefundStatus
 };

@@ -66,10 +66,15 @@ const PromotionalEmails = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const emailData = {
+        ...formData,
+        scheduledFor: new Date(formData.scheduledFor).toISOString()
+      };
+
       if (selectedEmail) {
-        await axios.put('/promotional-emails', formData);
+        await axios.put(`/promotional-emails/${selectedEmail._id}`, emailData);
       } else {
-        await axios.post('/promotional-emails', formData);
+        await axios.post('/promotional-emails', emailData);
       }
       setShowForm(false);
       setSelectedEmail(null);
@@ -85,6 +90,8 @@ const PromotionalEmails = () => {
       fetchEmails();
     } catch (error) {
       console.error('Error saving email:', error);
+      // Show error message to user
+      alert(error.response?.data?.message || 'Error saving email. Please try again.');
     }
   };
 
@@ -105,10 +112,11 @@ const PromotionalEmails = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this email?')) {
       try {
-        await axios.delete('/promotional-emails', { data: { id } });
+        await axios.delete(`/promotional-emails/${id}`);
         fetchEmails();
       } catch (error) {
         console.error('Error deleting email:', error);
+        alert(error.response?.data?.message || 'Error deleting email. Please try again.');
       }
     }
   };

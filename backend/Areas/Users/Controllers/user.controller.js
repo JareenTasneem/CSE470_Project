@@ -168,8 +168,18 @@ const loginUser = async (req, res) => {
 
     // Check if user with that email exists
     const user = await User.findOne({ email });
+    console.log("[LOGIN DEBUG] User found:", user); // Debug log
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // Check if user is banned
+    console.log("[LOGIN DEBUG] user.banned:", user.banned); // Debug log
+    if (user.banned) {
+      return res.status(403).json({ 
+        message: "YOU ARE BANNED!!!!",
+        isBanned: true 
+      });
     }
 
     // Compare passwords
@@ -377,12 +387,104 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+// Admin: Get all users with full details
+const getAllUsersAdmin = async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    res.json(users);
+  } catch (error) {
+    console.error("Error in getAllUsersAdmin:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Admin: Get user by ID
+const getUserByIdAdmin = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error("Error in getUserByIdAdmin:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Admin: Update user
+const updateUserAdmin = async (req, res) => {
+  try {
+    const { name, email, phone, address, user_type } = req.body;
+    const user = await User.findById(req.params.id);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update fields
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
+    if (address) user.address = address;
+    if (user_type) user.user_type = user_type;
+
+    await user.save();
+    res.json({ message: "User updated successfully", user });
+  } catch (error) {
+    console.error("Error in updateUserAdmin:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Admin: Ban/Unban user
+const banUserAdmin = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.banned = !user.banned;
+    await user.save();
+    
+    res.json({ 
+      message: user.banned ? "User banned successfully" : "User unbanned successfully",
+      user 
+    });
+  } catch (error) {
+    console.error("Error in banUserAdmin:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Admin: Delete user
+const deleteUserAdmin = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await user.deleteOne();
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error in deleteUserAdmin:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
-  getUserProfile, // Done by Ritu
-  updateUserProfile, // Done by Ritu
-  uploadProfilePhoto, // Done by Ritu
-  deleteProfilePhoto, // Done by Ritu
-  getAllUsers, // Added for admin selection
+  getUserProfile,
+  updateUserProfile,
+  uploadProfilePhoto,
+  deleteProfilePhoto,
+  getAllUsers,
+  getAllUsersAdmin,
+  getUserByIdAdmin,
+  updateUserAdmin,
+  banUserAdmin,
+  deleteUserAdmin
 };
