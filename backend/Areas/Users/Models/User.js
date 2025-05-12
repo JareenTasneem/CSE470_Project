@@ -36,8 +36,21 @@ const userSchema = new mongoose.Schema(
     loyaltyPoints: { type: Number, default: 0 },
     membership_tier: {
       type: String,
-      enum: ["Bronze", "Silver", "Gold"],
+      enum: ["Bronze", "Silver", "Gold", "Platinum"],
       default: "Bronze",
+    },
+    discount_percentage: {
+      type: Number,
+      default: 0,
+      get: function() {
+        switch(this.membership_tier) {
+          case "Bronze": return 0;
+          case "Silver": return 5;
+          case "Gold": return 10;
+          case "Platinum": return 15;
+          default: return 0;
+        }
+      }
     },
 
     // New profile customization fields - Done by Ritu

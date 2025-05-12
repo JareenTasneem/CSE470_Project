@@ -22,6 +22,8 @@ require("./Areas/Bookings/Models/Booking");
 require("./Areas/Payments/Models/Payment");          // ← payment model
 require("./Areas/Reviews/Models/Review");
 require("./Areas/Visa/Models/Visa");
+require("./Areas/LoyaltyTransactions/Models/LoyaltyTransaction");  // ← loyalty transaction model
+require("./Areas/Maintenance/Models/Maintenance");  // Add this line
 
 // Mount routers
 const tourPackageRoutes = require("./Areas/TourPackages/Routes/tourPackage.routes");
@@ -54,6 +56,22 @@ app.use("/api/refunds", refundRoutes);
 
 const reviewRoutes = require("./Areas/Reviews/Routes/reviewRoutes");
 app.use("/api/reviews", reviewRoutes);
+
+// Add loyalty routes
+const loyaltyRoutes = require("./Areas/LoyaltyTransactions/Routes/loyalty.routes");
+app.use("/api/loyalty", loyaltyRoutes);
+
+// Add maintenance routes
+const maintenanceRoutes = require('./Areas/Maintenance/Routes/maintenance.routes');
+app.use('/api/maintenance', maintenanceRoutes);
+
+// Add promotional email routes
+const promotionalEmailRoutes = require('./Areas/Notifications/Routes/promotionalEmailRoutes');
+app.use('/api/promotional-emails', promotionalEmailRoutes);
+
+// Start the email scheduler
+const { startScheduler } = require('./services/emailScheduler');
+startScheduler();
 
 app.get("/", (req, res) => {
   res.send("🌍 Travel Agency API is running!");

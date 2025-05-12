@@ -2,8 +2,10 @@
 /* eslint-disable consistent-return */
 const Payment  = require("../Models/Payment");
 const Booking  = require("../../Bookings/Models/Booking");
+const User = require("../../Users/Models/User");
 const { v4: uuidv4 } = require("uuid");
 const stripe   = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const loyaltyController = require("../../LoyaltyTransactions/Controllers/loyalty.controller");
 
 /* 🆕 pull in the PDF builder helper */
 const { buildInvoice } = require("../Services/InvoiceService");
@@ -23,7 +25,9 @@ exports.createInstallmentPlan = async (req, res) => {
     if (typeof booking.total_price !== "number")
       return res.status(400).json({ message: "Booking does not have a valid total_price" });
 
-    const perInstallment = parseFloat((booking.total_price / 3).toFixed(2));
+    // Calculate discounted price based on user's loyalty tier
+    const discountedPrice = await calculateDiscountedPrice(booking.user, booking.total_price);
+    const perInstallment = parseFloat((discountedPrice / 3).toFixed(2));
     const start = booking.createdAt || new Date();
     const createdPlans = [];
 
@@ -36,6 +40,8 @@ exports.createInstallmentPlan = async (req, res) => {
         amount: perInstallment,
         dueDate: new Date(start.getFullYear(), start.getMonth() + i - 1, start.getDate()),
         status: "Unpaid",
+        original_amount: booking.total_price / 3,
+        discount_amount: (booking.total_price - discountedPrice) / 3
       });
       await plan.save();
       createdPlans.push(plan);
@@ -166,13 +172,19 @@ exports.createFullPaymentSession = async (req, res) => {
     }
     if (price <= 0) return res.status(400).json({ message: "Invalid price" });
 
+    // Calculate discounted price based on user's loyalty tier
+    const discountedPrice = await calculateDiscountedPrice(booking.user, price);
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [{
         price_data: {
           currency: "usd",
-          product_data: { name: `Booking ${bookingId}` },
-          unit_amount: Math.round(price * 100),
+          product_data: { 
+            name: `Booking ${bookingId}`,
+            description: `Original price: $${price.toFixed(2)} - Discount: ${(price - discountedPrice).toFixed(2)}`
+          },
+          unit_amount: Math.round(discountedPrice * 100),
         },
         quantity: 1,
       }],
@@ -220,12 +232,31 @@ exports.createInstallmentPaymentSession = async (req, res) => {
 exports.confirmInstallmentPayment = async (req, res) => {
   try {
     const { paymentId } = req.body;
-    const payment = await Payment.findById(paymentId);
+    const payment = await Payment.findById(paymentId).populate('booking');
     if (!payment) return res.status(404).json({ message: "Payment not found" });
 
     payment.status = "Paid";
     payment.paidAt = new Date();
     await payment.save();
+
+    // Check if all installments are paid
+    const allPayments = await Payment.find({ booking: payment.booking._id });
+    const allPaid = allPayments.every(p => p.status === "Paid");
+
+    // If all installments are paid, confirm the booking and add points
+    if (allPaid && payment.booking.status !== "Confirmed") {
+      payment.booking.status = "Confirmed";
+      await payment.booking.save();
+
+      // Add loyalty points for the confirmed booking
+      try {
+        await loyaltyController.addPointsForBooking(payment.booking._id);
+      } catch (error) {
+        console.error("Error adding loyalty points:", error);
+        // Don't fail the payment confirmation if points addition fails
+      }
+    }
+
     res.json({ message: "Payment marked as Paid", payment });
   } catch (err) {
     console.error("confirmInstallmentPayment:", err);
@@ -239,13 +270,38 @@ exports.confirmFullPayment = async (req, res) => {
     const booking = await Booking.findById(bookingId);
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
+    // Only add points if the booking is being confirmed for the first time
     if (booking.status !== "Confirmed") {
       booking.status = "Confirmed";
       await booking.save();
+
+      // Add loyalty points for the confirmed booking
+      try {
+        await loyaltyController.addPointsForBooking(bookingId);
+        console.log(`Added loyalty points for booking ${bookingId}`);
+      } catch (error) {
+        console.error("Error adding loyalty points:", error);
+        // Don't fail the payment confirmation if points addition fails
+      }
     }
     res.json({ message: "Booking confirmed successfully", booking });
   } catch (err) {
     console.error("confirmFullPayment:", err);
     res.status(500).json({ message: "Server error confirming payment", error: err.message });
+  }
+};
+
+// Calculate discounted price based on user's loyalty tier
+const calculateDiscountedPrice = async (userId, originalPrice) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return originalPrice;
+
+    const discountPercentage = user.discount_percentage;
+    const discountAmount = (originalPrice * discountPercentage) / 100;
+    return originalPrice - discountAmount;
+  } catch (error) {
+    console.error("Error calculating discounted price:", error);
+    return originalPrice;
   }
 };

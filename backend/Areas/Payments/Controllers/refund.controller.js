@@ -1,5 +1,8 @@
 const Booking = require("../../Bookings/Models/Booking");
 const Refund = require("../Models/Refund");
+const User = require("../../Users/Models/User");
+const LoyaltyTransaction = require("../../LoyaltyTransactions/Models/LoyaltyTransaction");
+const loyaltyController = require("../../LoyaltyTransactions/Controllers/loyalty.controller");
 
 // Calculate refund amount based on policy (example: 90% if within 7 days, etc.)
 function calculateRefundAmount(booking) {
@@ -11,6 +14,22 @@ function calculateRefundAmount(booking) {
   if (daysDifference <= 14) return price * 0.75;
   if (daysDifference <= 30) return price * 0.5;
   return price * 0.2;
+}
+
+// Calculate points to deduct based on booking type
+function calculatePointsToDeduct(booking) {
+  // Check if it's a custom package
+  if (booking.custom_package) {
+    return 900; // 900 points for customized pack
+  }
+  
+  // Check if it's a tour package
+  if (booking.tour_package) {
+    return 1000; // 1000 points for tour pack
+  }
+  
+  // For individual hotel or flight bookings
+  return 300; // 300 points for hotel or flight only
 }
 
 exports.requestRefund = async (req, res) => {
@@ -36,14 +55,20 @@ exports.requestRefund = async (req, res) => {
       console.log('Refund already requested or processed:', { refundRequested: booking.refundRequested, refundStatus: booking.refundStatus });
       return res.status(400).json({ message: "Refund already requested or processed for this booking." });
     }
+
     // Calculate refund amount
     const refundAmount = calculateRefundAmount(booking);
+    
+    // Calculate points to deduct
+    const pointsToDeduct = calculatePointsToDeduct(booking);
+
     // Update booking
     booking.refundRequested = true;
     booking.refundStatus = "requested";
     booking.refundReason = reason;
     booking.refundAmount = refundAmount;
     await booking.save();
+
     // Create refund record
     const refund = await Refund.create({
       booking: booking._id,
@@ -52,10 +77,36 @@ exports.requestRefund = async (req, res) => {
       reason,
       status: "requested"
     });
+
+    // Deduct loyalty points
+    try {
+      // Create transaction record for points deduction
+      const transaction = new LoyaltyTransaction({
+        user: userId,
+        booking: bookingId,
+        points: -pointsToDeduct, // Negative points for deduction
+        type: "ADJUSTMENT",
+        description: `Points deducted for refund of booking #${booking.booking_id}`,
+        status: "ACTIVE"
+      });
+
+      await transaction.save();
+
+      // Update user's points
+      await User.findByIdAndUpdate(userId, {
+        $inc: { loyaltyPoints: -pointsToDeduct }
+      });
+
+      console.log(`Deducted ${pointsToDeduct} points for refund of booking ${bookingId}`);
+    } catch (error) {
+      console.error("Error deducting loyalty points:", error);
+      // Don't fail the refund request if points deduction fails
+    }
+
     console.log('Refund created:', refund);
     res.status(201).json({ message: "Refund requested successfully", refund });
   } catch (err) {
-    console.error("requestRefund error:", err);
-    res.status(500).json({ message: `Server error requesting refund: ${err.message}`, error: err });
+    console.error("Error processing refund request:", err);
+    res.status(500).json({ message: "Server error processing refund request", error: err.message });
   }
 }; 

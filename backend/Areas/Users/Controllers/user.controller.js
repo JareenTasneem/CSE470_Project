@@ -367,6 +367,16 @@ const deleteProfilePhoto = async (req, res) => {
   }
 };
 
+// Add getAllUsers controller
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({}, '_id name email');
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching users' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -374,4 +384,5 @@ module.exports = {
   updateUserProfile, // Done by Ritu
   uploadProfilePhoto, // Done by Ritu
   deleteProfilePhoto, // Done by Ritu
+  getAllUsers, // Added for admin selection
 };

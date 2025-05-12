@@ -43,6 +43,7 @@ import InstallmentStatus from "./InstallmentStatus";
 import Invoice from "./Invoice";
 
 import { AuthProvider } from "./contexts/AuthContext";
+import { MaintenanceProvider } from "./contexts/MaintenanceContext";
 
 import PaymentSuccess from "./PaymentSuccess";
 import PaymentCancel from "./PaymentCancel";
@@ -210,10 +211,12 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppRoutes />
-      </Router>
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <MaintenanceProvider>
+          <AppRoutes />
+        </MaintenanceProvider>
+      </AuthProvider>
+    </Router>
   );
 }

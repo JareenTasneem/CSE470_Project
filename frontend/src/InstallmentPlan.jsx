@@ -40,8 +40,11 @@ export default function InstallmentPlan() {
 
       setPlan((prev) => {
         const upd = prev.map((p) => p._id === paymentId ? { ...p, status: "Paid" } : p);
+        // Check if all installments are paid and confirm the booking
         if (upd.every((p) => p.status === "Paid")) {
-          axios.post(`/payments/confirm-full-payment/${bookingId}`);
+          // Call confirm-full-payment to add points
+          axios.post(`/payments/confirm-full-payment/${bookingId}`)
+            .catch(err => console.error("Error confirming full payment:", err));
         }
         return upd;
       });

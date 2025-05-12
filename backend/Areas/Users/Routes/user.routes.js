@@ -25,4 +25,7 @@ router.put("/profile", auth, userController.updateUserProfile);
 router.post("/profile/photo", auth, userController.uploadProfilePhoto);
 router.delete("/profile/photo", auth, userController.deleteProfilePhoto);
 
+// Add a public route to get all users
+router.get('/', userController.getAllUsers);
+
 module.exports = router;

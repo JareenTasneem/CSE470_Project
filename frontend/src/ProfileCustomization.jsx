@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { AuthContext } from "./contexts/AuthContext";
+import LoyaltyPoints from "./components/LoyaltyPoints";
 
 // Theme Management Utility
 const ThemeManager = {
@@ -649,6 +650,16 @@ export default function ProfileCustomization() {
                   Social Links
                 </button>
                 <button
+                  onClick={() => setActiveTab("loyalty")}
+                  className={`py-4 px-6 text-center border-b-2 font-medium text-sm tab-transition ${
+                    activeTab === "loyalty"
+                      ? "border-blue-500 text-blue-600"
+                      : "border-transparent theme-aware-text-secondary hover:text-blue-500 hover:border-blue-200"
+                  }`}
+                >
+                  Loyalty Program
+                </button>
+                <button
                   onClick={() => setActiveTab("preferences")}
                   className={`py-4 px-6 text-center border-b-2 font-medium text-sm tab-transition ${
                     activeTab === "preferences"
@@ -885,6 +896,13 @@ export default function ProfileCustomization() {
                         </div>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {/* Loyalty Tab */}
+                {activeTab === "loyalty" && (
+                  <div className="animate__animated animate__fadeIn">
+                    <LoyaltyPoints />
                   </div>
                 )}
 
