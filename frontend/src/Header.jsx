@@ -18,8 +18,12 @@ export default function Header() {
   }, [user]);
 
   const handleLogout = () => {
+    // Clear any existing state
+    window.history.replaceState(null, '', '/');
+    // Perform logout
     logout();
-    navigate("/login", { replace: true });
+    // Navigate to login page
+    navigate("/", { replace: true });
   };
 
   return (

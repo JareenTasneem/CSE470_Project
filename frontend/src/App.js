@@ -5,6 +5,7 @@ import {
   Routes,
   Route,
   useLocation,
+  Navigate,
 } from "react-router-dom";
 
 // Pages/Components
@@ -61,7 +62,9 @@ function AppRoutes() {
     <>
       <Routes location={background || location}>
         {/* ─── Public Routes ─── */}
-        <Route path="/" element={
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Navigate to="/" replace />} />
+        <Route path="/home" element={
           <ProtectedRoute>
             <TravelPack />
           </ProtectedRoute>
@@ -69,7 +72,6 @@ function AppRoutes() {
         <Route path="/tourPackages" element={<TourPackagesList />} />
         <Route path="/tourPackages/:id" element={<TourPackageDetails />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
         <Route path="/flights" element={<FlightList />} />
         <Route path="/flight/:id" element={<FlightDetails />} />
         <Route path="/hotels" element={<HotelList />} />
@@ -188,6 +190,11 @@ function AppRoutes() {
         <Route path="/refund-status/:bookingId" element={
           <ProtectedRoute>
             <RefundStatus />
+          </ProtectedRoute>
+        } />
+        <Route path="/book-custom-package/:id" element={
+          <ProtectedRoute>
+            <BookCustomPackage />
           </ProtectedRoute>
         } />
       </Routes>

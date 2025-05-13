@@ -34,7 +34,7 @@ export default function UserManagement() {
       console.error("Error fetching users:", err);
       if (err.response?.status === 401) {
         toast.error("Please log in to access this feature");
-        navigate("/login");
+        navigate("/");
       } else if (err.response?.status === 403) {
         toast.error("Access denied. Admin privileges required.");
         navigate("/");

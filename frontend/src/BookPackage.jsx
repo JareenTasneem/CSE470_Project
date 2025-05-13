@@ -21,7 +21,7 @@ function BookPackage() {
   useEffect(() => {
     if (!user) {
       alert("You must be logged in to book a package.");
-      navigate("/login");
+      navigate("/");
     }
   }, [user, navigate]);
 

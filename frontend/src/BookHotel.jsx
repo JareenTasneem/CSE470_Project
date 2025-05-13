@@ -103,7 +103,7 @@ const BookHotel = () => {
       });
   
       alert("Hotel booked successfully!");
-      navigate(-1);
+      navigate("/");
     } catch (err) {
       console.error("Error booking hotel:", err);
       alert("Booking failed. Please try again.");

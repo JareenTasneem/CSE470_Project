@@ -17,7 +17,7 @@ const BookFlight = () => {
 
   /* fetch flight */
   useEffect(() => {
-    if (!user) return navigate("/login");
+    if (!user) return navigate("/");
 
     axios
       .get(`/flights/${id}`)

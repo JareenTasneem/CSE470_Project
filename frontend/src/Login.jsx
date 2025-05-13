@@ -38,7 +38,7 @@ function Login() {
       login(userData, token);
 
       // Redirect based on user type and previous location
-      const from = location.state?.from?.pathname || "/";
+      const from = location.state?.from?.pathname || "/home";
       if (userData.user_type === "Admin") {
         navigate("/admin-dashboard", { replace: true });
       } else {

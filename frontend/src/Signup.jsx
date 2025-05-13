@@ -37,7 +37,7 @@ function Signup() {
         setSuccess("User registered successfully!");
         // Optionally navigate to login page
         setTimeout(() => {
-          navigate("/login");
+          navigate("/");
         }, 1500);
       }
     } catch (err) {

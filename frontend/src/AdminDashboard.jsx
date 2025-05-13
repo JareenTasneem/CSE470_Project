@@ -26,23 +26,26 @@ export default function AdminDashboard() {
     // If user is not admin, force logout and redirect
     if (!user || user.user_type !== "Admin") {
       logout();
-      navigate("/login", { replace: true });
+      navigate("/", { replace: true });
       return;
     }
-    // Trap the admin on the dashboard
-    window.history.pushState(null, '', window.location.pathname);
-    const handlePopState = (event) => {
-      if (
-        location.pathname === "/admin-dashboard" ||
-        location.pathname === "/admin-profilecustomization"
-      ) {
-        window.history.pushState(null, '', window.location.pathname);
-      } else {
-        navigate("/admin-dashboard", { replace: true });
-      }
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
+
+    // Only trap history if we're still logged in as admin
+    if (user && user.user_type === "Admin") {
+      window.history.pushState(null, '', window.location.pathname);
+      const handlePopState = (event) => {
+        if (
+          location.pathname === "/admin-dashboard" ||
+          location.pathname === "/admin-profilecustomization"
+        ) {
+          window.history.pushState(null, '', window.location.pathname);
+        } else {
+          navigate("/admin-dashboard", { replace: true });
+        }
+      };
+      window.addEventListener("popstate", handlePopState);
+      return () => window.removeEventListener("popstate", handlePopState);
+    }
   }, [location, navigate, user, logout]);
 
   return (
