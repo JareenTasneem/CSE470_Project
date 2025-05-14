@@ -6,7 +6,7 @@ import UserManagement from "./UserManagement";
 import BookingOversight from "./BookingOversight";
 import Analytics from "./Analytics";
 import Notifications from "./Notifications";
-import "./dashboard.css";
+import "./styles/dashboard.css";
 import { AuthContext } from "./contexts/AuthContext";
 
 const PAGES = {

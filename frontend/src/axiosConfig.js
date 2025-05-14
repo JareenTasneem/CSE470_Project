@@ -5,7 +5,7 @@ import { getAuthToken } from './contexts/AuthContext';
 // Create an Axios instance with the base URL of your API
 const instance = axios.create({
   baseURL: "http://localhost:5000/api",
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
   }

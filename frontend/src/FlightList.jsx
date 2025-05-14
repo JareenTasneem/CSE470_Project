@@ -148,7 +148,7 @@ const FlightList = () => {
             </div>
             {/* Buttons */}
             <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "15px" }}>
-              <Link to={`/flights/details/${flight._id}`} style={{ flex: 1 }}>
+              <Link to={`/flight/${flight._id}`} style={{ flex: 1 }}>
                 <button
                   style={{
                     padding: "10px 20px",
