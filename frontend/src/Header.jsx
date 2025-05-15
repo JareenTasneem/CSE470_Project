@@ -28,8 +28,8 @@ export default function Header() {
   };
 
   return (
-    <header className="dashboard-header">
-      <div className="header-title">Admin Dashboard</div>
+    <header className="dashboard-header" style={{ height: "90px"}}>
+      <div className="header-title" style={{margin: "380px"}}>Admin Dashboard</div>
       <div className="header-actions">
         <span>Welcome, Admin</span>
         <div className="maintenance-toggle">

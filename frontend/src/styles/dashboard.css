@@ -15,7 +15,7 @@ body, html {
 }
 
 .dashboard-sidebar {
-  width: 250px;
+  width: 300px;
   background: #232946;
   color: #fff;
   display: flex;
@@ -76,6 +76,7 @@ body, html {
   padding: 0 3rem;
   box-shadow: 0 2px 8px 0 rgba(35,41,70,0.04);
   z-index: 90;
+  margin-right: 0px;
 }
 
 .dashboard-header .header-title {
@@ -87,7 +88,6 @@ body, html {
 
 .dashboard-header .header-actions {
   display: flex;
-  margin-right: 350px;
   align-items: center;
   gap: 2rem;
 }
@@ -207,43 +207,51 @@ body, html {
 }
 
 .maintenance-banner {
-  background-color: #dc3545;
-  color: white;
-  padding: 15px;
-  text-align: center;
-  position: relative;
-  z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .maintenance-content {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
   text-align: center;
+  max-width: 90%;
+  width: 400px;
 }
 
 .maintenance-content h2 {
-  font-size: 24px;
-  margin-bottom: 15px;
-  color: white;
+  color: #dc3545;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
 }
 
 .login-redirect-btn {
-  display: inline-block;
-  padding: 10px 20px;
-  background-color: white;
-  color: #dc3545;
-  text-decoration: none;
-  border-radius: 5px;
-  margin-top: 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
   font-weight: 500;
+  transition: background-color 0.2s;
 }
 
 .login-redirect-btn:hover {
-  background-color: #f8f9fa;
+  background-color: #0056b3;
 }
 
 .maintenance-error {
   color: #dc3545;
-  margin-top: 10px;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  text-align: center;
 } 

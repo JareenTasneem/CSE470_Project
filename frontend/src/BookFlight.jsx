@@ -71,10 +71,6 @@ const BookFlight = () => {
 
   const inputStyle = {
     width: "100%",
-    padding: "10px",
-    margin: "5px 0 15px",
-    borderRadius: "4px",
-    border: "1px solid #ccc",
   };
 
   return (
