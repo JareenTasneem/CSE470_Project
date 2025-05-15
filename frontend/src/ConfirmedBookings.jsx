@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "./contexts/AuthContext";
 import axios from "./axiosConfig";
 import { useNavigate } from "react-router-dom";
+import Navbar from './components/Navbar';
 import bookingController from "./controllers/bookingController";
 // import { toast } from "react-toastify"; //Added extra
 // import "react-toastify/dist/ReactToastify.css"; //Added extra
@@ -72,30 +73,31 @@ function ConfirmedBookings() {
       ? item.custom_package?.flights || []
       : item.flights || [];
 
-    const hotels = isCustom
-      ? item.custom_package?.hotels || []
-      : item.hotels || [];
-
-    const entertainments = isCustom
-      ? item.custom_package?.entertainments || []
-      : item.entertainments || [];
-
-    // Add single hotel booking details
-    if (item.hotelMeta && !isCustom && !item.tour_package && !item.flights?.length) {
-      hotels.push({
+    // Prepare hotels array for rendering (avoid mutation)
+    let hotelsToRender = [];
+    if (isCustom) {
+      hotelsToRender = item.custom_package?.hotels || [];
+    } else if (item.hotels && item.hotels.length > 0) {
+      hotelsToRender = item.hotels;
+    } else if (item.hotelMeta && !item.tour_package && !item.flights?.length) {
+      hotelsToRender = [{
         _id: item._id,
         hotel_name: item.hotelMeta.hotel_name,
         location: item.hotelMeta.location,
         price_per_night: item.hotelMeta.price_per_night,
         roomType: item.hotel_room_details?.roomType,
         numberOfRooms: item.hotel_room_details?.numberOfRooms
-      });
+      }];
     }
+
+    const entertainments = isCustom
+      ? item.custom_package?.entertainments || []
+      : item.entertainments || [];
 
     // 🧮 Total price calculation
     const customTotal =
       flights.reduce((sum, f) => sum + (f.price || 0), 0) +
-      hotels.reduce((sum, h) => sum + (h.price_per_night || 0), 0) +
+      hotelsToRender.reduce((sum, h) => sum + (h.price_per_night || 0), 0) +
       entertainments.reduce((sum, e) => sum + (e.price || 0), 0);
 
     const totalPrice = isCustom ? customTotal : item.total_price || 0;
@@ -121,6 +123,8 @@ function ConfirmedBookings() {
     }
 
     return (
+      <div>
+      <Navbar />
       <div 
         key={item._id}
         style={{ 
@@ -182,11 +186,11 @@ function ConfirmedBookings() {
               </div>
             )}
 
-            {hotels.length > 0 && (
+            {hotelsToRender.length > 0 && (
               <div style={{ marginBottom: "10px" }}>
                 <h5 style={{ marginBottom: "5px" }}>Hotels:</h5>
                 <ul style={{ listStyleType: "disc", paddingLeft: "20px" }}>
-                  {hotels.map((h) => (
+                  {hotelsToRender.map((h) => (
                     <li key={h._id}>
                       <strong>{h.hotel_name}</strong> in <em>{h.location}</em>
                       <br />
@@ -304,6 +308,7 @@ function ConfirmedBookings() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     );
   };
