@@ -51,7 +51,7 @@ header nav ul li a:hover {
 header .content {
     position: relative;
     width: 100%;
-    height: 80%;
+    height: 580px;
     /* border: 1px solid #000; */
 }
 
@@ -445,4 +445,19 @@ footer p{
 .menu-btn i, .menu-btn span {
   background: transparent !important;
   transition: background 0.3s;
+}
+
+.filter-input {
+  padding: 10px;
+  width: 250px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  transition: border 0.2s ease;
+  font-family: "Poppins", sans-serif;
+}
+
+.filter-input:hover,
+.filter-input:focus {
+  border: 2px solid #555;
+  outline: none;
 }

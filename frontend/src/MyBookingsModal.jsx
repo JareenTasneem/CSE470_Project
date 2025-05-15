@@ -1,6 +1,7 @@
 // src/MyBookingsModal.jsx
 import React from "react";
-import MyBookings from "./MyBookings";
+// import MyBookings from "./MyBookings";
+import ConfirmedBookings from "./ConfirmedBookings"
 
 const MyBookingsModal = ({ onClose }) => {
   return (
@@ -41,7 +42,7 @@ const MyBookingsModal = ({ onClose }) => {
         >
           Close
         </button>
-        <MyBookings />
+        <ConfirmedBookings />
       </div>
     </div>
   );

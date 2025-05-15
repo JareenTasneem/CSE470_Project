@@ -37,11 +37,11 @@ const TravelPack = () => {
   const [notices, setNotices] = useState([]);
   const [showNotices, setShowNotices] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 740);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1200);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 20;
+  const itemsPerPage = 15;
 
   useEffect(() => {
     const handleResize = () => {
@@ -347,7 +347,7 @@ const TravelPack = () => {
               color: "#fff", 
               margin: 0,
               fontSize: "clamp(1rem, 2vw, 1.5rem)"
-            }}>Travel Agency || Travel Packs</h4>
+            }}>Travel Agency || Home Page</h4>
             <button
               onClick={() => setShowMenu(!showMenu)}
               style={{
@@ -651,7 +651,7 @@ const TravelPack = () => {
                     alt="Tour"
                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', borderTopLeftRadius: 5, borderTopRightRadius: 5 }}
                   />
-                  <div style={{
+                  {/* <div style={{
                     position: 'absolute',
                     bottom: 0,
                     left: 0,
@@ -671,7 +671,7 @@ const TravelPack = () => {
                     borderTopRightRadius: 0,
                   }}>
                     Included: {pkg.inclusions?.join(', ') || 'No inclusions listed'}
-                  </div>
+                  </div> */}
                 </div>
                 <div style={{ padding: '22px 20px 18px 20px', flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                   <div>

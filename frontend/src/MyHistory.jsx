@@ -3,6 +3,7 @@ import axios from './axiosConfig';
 import { Container, Spinner, Alert } from 'react-bootstrap';
 import { FaStar, FaHotel, FaPlane, FaMapMarkedAlt } from 'react-icons/fa';
 import { useAuth } from './contexts/AuthContext';
+import Navbar from './components/Navbar';
 
 const ACCENT = '#ffc107';
 const iconFor = (t) =>
@@ -58,81 +59,84 @@ export default function MyHistory() {
 
   /* -------------------- card list --------------------- */
   return (
-    <Container className="py-4">
-      <h2 className="fw-bold mb-4">My Reviews</h2>
+    <div>
+      <Navbar />
+      <Container className="py-4">
+        <h2 className="fw-bold mb-4">My Reviews</h2>
 
-      {reviews.map((r) => (
-        <div
-          key={r._id}
-          style={{
-            padding: 15,
-            border: '1px solid #ddd',
-            borderRadius: 8,
-            marginBottom: 15,
-            background: '#fff',
-            boxShadow: '0 2px 6px rgba(0,0,0,.08)',
-          }}
-        >
-          {/* header row */}
+        {reviews.map((r) => (
           <div
+            key={r._id}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: 6,
+              padding: 15,
+              border: '1px solid #ddd',
+              borderRadius: 8,
+              marginBottom: 15,
+              background: '#fff',
+              boxShadow: '0 2px 6px rgba(0,0,0,.08)',
             }}
           >
-            {iconFor(r.item_type)}
-            <span style={{ fontWeight: 700, fontSize: 18 }}>
-              {r.itemName}
-            </span>
-            <span
+            {/* header row */}
+            <div
               style={{
-                marginLeft: 'auto',
-                fontSize: 13,
-                color: '#666',
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: 6,
               }}
             >
-              {r.item_type}
-            </span>
-          </div>
-
-          {/* stars */}
-          <div style={{ marginBottom: 6 }}>
-            {[1, 2, 3, 4, 5].map((s) => (
-              <FaStar
-                key={s}
+              {iconFor(r.item_type)}
+              <span style={{ fontWeight: 700, fontSize: 18 }}>
+                {r.itemName}
+              </span>
+              <span
                 style={{
-                  color: s <= r.rating ? ACCENT : '#e4e5e9',
-                  marginRight: 2,
+                  marginLeft: 'auto',
+                  fontSize: 13,
+                  color: '#666',
                 }}
-              />
-            ))}
-          </div>
+              >
+                {r.item_type}
+              </span>
+            </div>
 
-          {/* review title / text */}
-          <div
-            style={{
-              fontWeight: 600,
-              fontSize: 16,
-              marginBottom: 4,
-            }}
-          >
-            {r.title}
-          </div>
-          <div style={{ fontSize: 15, color: '#444' }}>{r.comment}</div>
+            {/* stars */}
+            <div style={{ marginBottom: 6 }}>
+              {[1, 2, 3, 4, 5].map((s) => (
+                <FaStar
+                  key={s}
+                  style={{
+                    color: s <= r.rating ? ACCENT : '#e4e5e9',
+                    marginRight: 2,
+                  }}
+                />
+              ))}
+            </div>
 
-          {/* date */}
-          <div
-            style={{
-              fontSize: 13,
-              color: '#888',
-              marginTop: 8,
-            }}
-          >
-            {new Date(r.createdAt).toLocaleDateString()}
+            {/* review title / text */}
+            <div
+              style={{
+                fontWeight: 600,
+                fontSize: 16,
+                marginBottom: 4,
+              }}
+            >
+              {r.title}
+            </div>
+            <div style={{ fontSize: 15, color: '#444' }}>{r.comment}</div>
+
+            {/* date */}
+            <div
+              style={{
+                fontSize: 13,
+                color: '#888',
+                marginTop: 8,
+              }}
+            >
+              {new Date(r.createdAt).toLocaleDateString()}
+            </div>
           </div>
-        </div>
-      ))}
-    </Container>
+        ))}
+      </Container>
+    </div>
   );
 }
