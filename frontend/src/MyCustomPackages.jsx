@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "./contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom"; // for navigate and Link
 import axios from "./axiosConfig";
+import Navbar from './components/Navbar';
 
 function MyCustomPackages() {
   const { user, logout } = useContext(AuthContext);
@@ -87,114 +88,9 @@ function MyCustomPackages() {
   }
 
   return (
-    <>
-      <header className="header">
-        <nav className="navbar">
-          <h4>Travel Agency || Travel Packs</h4>
-          <ul>
-            {user ? (
-              <>
-                <li>
-                  <span
-                    style={{ cursor: "pointer", fontWeight: 600, color: "#007bff", background: "#181818", borderRadius: 20, padding: "6px 18px", marginRight: 10, display: "inline-block" }}
-                    onClick={() => navigate("/profilecustomization")}
-                  >
-                    {user.name && user.name.trim() !== "" ? user.name : "Profile"}
-                  </span>
-                </li>
-                <li style={{ position: "relative", display: "inline-block", marginRight: 10 }}>
-                  <button
-                    className="notification-bell"
-                    onClick={() => setShowNotices((v) => !v)}
-                    style={{ fontSize: 20, background: "none", border: "none", cursor: "pointer" }}
-                    title="Show Notifications"
-                  >
-                    🔔
-                    {notices.length > 0 && (
-                      <span style={{ color: "red", fontWeight: "bold", marginLeft: 2 }}>
-                        {notices.length}
-                      </span>
-                    )}
-                  </button>
-                  {showNotices && (
-                    <div style={{
-                      position: "absolute", right: 0, top: "2.5em", background: "#fff", border: "1px solid #ccc", borderRadius: 6, minWidth: 220, zIndex: 1000, boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
-                    }}>
-                      <div style={{ padding: 8, borderBottom: "1px solid #eee", fontWeight: "bold" }}>Notifications</div>
-                      {notices.length === 0 ? (
-                        <div style={{ padding: 8 }}>No notifications</div>
-                      ) : (
-                        <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-                          {notices.map((notice) => (
-                            <li key={notice._id} style={{ padding: 8, borderBottom: "1px solid #eee" }}>
-                              {notice.message}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  )}
-                </li>
-                <li>
-                  <button
-                    onClick={() => navigate("/confirmedBookings")}
-                    style={{
-                      background: "#181818",
-                      color: "#fff",
-                      borderRadius: 20,
-                      padding: "6px 18px",
-                      fontWeight: 500,
-                      fontSize: "15px",
-                      minWidth: 0,
-                      minHeight: 0,
-                      lineHeight: 1.2,
-                      border: "none",
-                      marginRight: 10,
-                      cursor: "pointer"
-                    }}
-                  >
-                    Confirmed Bookings
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={logout}
-                    style={{
-                      background: "#181818",
-                      color: "#fff",
-                      borderRadius: 20,
-                      padding: "6px 18px",
-                      fontWeight: 500,
-                      fontSize: "15px",
-                      minWidth: 0,
-                      minHeight: 0,
-                      lineHeight: 1.2,
-                      border: "none",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Logout
-                  </button>
-                </li>
-              </>
-            ) : (
-              <>
-                <li>
-                  <Link to="/login" style={{ textDecoration: "none", color: "inherit" }}>
-                    Login
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/signup" style={{ textDecoration: "none", color: "inherit" }}>
-                    Sign up
-                  </Link>
-                </li>
-              </>
-            )}
-          </ul>
-        </nav>
-      </header>
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 16px" }}>
+    <div>
+      <Navbar />
+      <div style={{ maxWidth: 900, margin: "50px auto", padding: "0 16px" }}>
         <h1 style={{ textAlign: "center", margin: "0 0 20px 0", fontWeight: 700, fontSize: 32, color: "#232946" }}>My Custom Packages</h1>
         {packages.length === 0 ? (
           <div style={{ textAlign: "center", color: "#888", fontSize: 20, marginTop: 60 }}>No custom packages found.</div>
@@ -311,7 +207,7 @@ function MyCustomPackages() {
           ))
         )}
       </div>
-    </>
+    </div>
   );
 }
 

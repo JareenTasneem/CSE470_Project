@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./contexts/AuthContext";
 import { useMaintenance } from "./contexts/MaintenanceContext";
 import axios from "./axiosConfig";
+import "./styles/dashboard.css";
 
 export default function Header() {
   const { user, logout } = useContext(AuthContext);
@@ -44,7 +45,7 @@ export default function Header() {
             </div>
           )}
         </div>
-        {/* Notification bell beside profile icon */}
+        {/* Notification bell beside profile icon
         <div style={{ position: "relative", display: "inline-block", marginRight: 16 }}>
           <button
             className="notification-bell"
@@ -77,8 +78,8 @@ export default function Header() {
               )}
             </div>
           )}
-        </div>
-        {/* Profile icon (j) */}
+        </div> */}
+        {/* Profile icon */}
         <div className="profile-icon" style={{ display: "inline-block", background: "#222", color: "#fff", borderRadius: "50%", width: 32, height: 32, textAlign: "center", lineHeight: "32px", fontWeight: "bold", marginRight: 12 }}>
           {user?.name ? user.name[0].toUpperCase() : "?"}
         </div>

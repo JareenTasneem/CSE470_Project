@@ -87,6 +87,7 @@ body, html {
 
 .dashboard-header .header-actions {
   display: flex;
+  margin-right: 350px;
   align-items: center;
   gap: 2rem;
 }

@@ -4,6 +4,7 @@ import { AuthContext } from "./contexts/AuthContext";
 import { Link, useLocation } from "react-router-dom"; // <-- note useLocation import
 import axios from "./axiosConfig";
 import Navbar from './components/Navbar';
+import "./styles/style.css";
 
 function CustomizePackage() {
   const { user, logout } = useContext(AuthContext);
@@ -30,9 +31,6 @@ function CustomizePackage() {
   // ---------- STATE: ACTIVE PANEL (flights/hotels/entertainments) ----------
   const [activeCategory, setActiveCategory] = useState("flights");
 
-  // ------------------------------------------------------------------
-  // 1) Fetch the lists of flights/hotels/entertainments from the server
-  // ------------------------------------------------------------------
   useEffect(() => {
     axios
       .get("http://localhost:5000/api/flights")
@@ -170,8 +168,20 @@ function CustomizePackage() {
           padding: "10px",
           border: "1px solid #ccc",
           borderRadius: "6px",
-          width: "calc(95% - 10px)",  // Change this line to adjust width
+          width: "350px",  // Change this line to adjust width
           marginBottom: "10px",
+          transition: "all 0.3s ease-in-out",
+          transform: "translateY(0px)" 
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-8px)";
+          e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.3)";
+          e.currentTarget.style.background = "#f5f5f5"; // slightly lighter grey
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0px)";
+          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+          e.currentTarget.style.background = "#fff";
         }}
       >
         <Link to={`/flight/${flight._id}`} style={{ textDecoration: "none", color: "inherit" }}>
@@ -199,13 +209,15 @@ function CustomizePackage() {
         <button
           onClick={() => handleBookFlight(flight)}
           style={{
-            background: "#007bff",
+            background: "#181818",
             color: "#fff",
             border: "none",
             padding: "6px 12px",
             cursor: "pointer",
             borderRadius: "4px",
           }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
         >
             Add Flight
           </button>
@@ -222,8 +234,20 @@ function CustomizePackage() {
           padding: "10px",
           border: "1px solid #ccc",
           borderRadius: "6px",
-          width: "calc(95% - 10px)",  // Change this line to adjust width
-          marginBottom: "10px"
+          width: "350px",  // Change this line to adjust width
+          marginBottom: "10px",
+          transition: "all 0.3s ease-in-out",
+          transform: "translateY(0px)" 
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-8px)";
+          e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.3)";
+          e.currentTarget.style.background = "#f5f5f5"; // slightly lighter grey
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0px)";
+          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+          e.currentTarget.style.background = "#fff";
         }}
       >
         <Link to={`/hotels/details/${hotel._id}`} style={{ textDecoration: "none", color: "inherit" }}>
@@ -245,13 +269,15 @@ function CustomizePackage() {
         <button
           onClick={() => handleBookHotel(hotel)}
           style={{
-            background: "#007bff",
+            background: "#181818",
             color: "#fff",
             border: "none",
             padding: "6px 12px",
             cursor: "pointer",
             borderRadius: "4px",
           }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
         >
           Add Hotel
         </button>
@@ -269,8 +295,20 @@ function CustomizePackage() {
           padding: "10px",
           border: "1px solid #ccc",
           borderRadius: "6px",
-          width: "calc(95% - 10px)",  // Change this line to adjust width
-          marginBottom: "10px"
+          width: "350px",  // Change this line to adjust width
+          marginBottom: "10px",
+          transition: "all 0.3s ease-in-out",
+          transform: "translateY(0px)" 
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "translateY(-8px)";
+          e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.3)";
+          e.currentTarget.style.background = "#f5f5f5"; // slightly lighter grey
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "translateY(0px)";
+          e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+          e.currentTarget.style.background = "#fff";
         }}
       >
         <Link to={`/entertainment/${ent._id}`} style={{ textDecoration: "none", color: "inherit" }}>
@@ -291,13 +329,15 @@ function CustomizePackage() {
         <button
           onClick={() => handleBookEntertainment(ent)}
           style={{
-            background: "#007bff",
+            background: "#181818",
             color: "#fff",
             border: "none",
             padding: "6px 12px",
             cursor: "pointer",
             borderRadius: "4px",
           }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
         >
           Add Entertainment
         </button>
@@ -330,7 +370,7 @@ function CustomizePackage() {
           </Link>
         </div> */}
         {/* ========== BODY LAYOUT ========== */}
-        <div style={{ display: "flex" }}>
+        <div style={{ display: "flex", border: "1px solid #ddd", borderRadius: '8px', boxShadow: "0 4px 16px rgba(0,0,0,0.13)" }}>
           {/* LEFT PANEL: FILTERS & BOOKED ITEMS */}
           <div style={{ width: "300px", background: "#f5f5f5", padding: "20px" }}>
             <h2 style={{ marginTop: 0 }}>Filters</h2>
@@ -340,20 +380,24 @@ function CustomizePackage() {
               <input
                 placeholder="From"
                 value={flightFilter.from}
+                className="filter-input"
                 onChange={(e) => setFlightFilter({ ...flightFilter, from: e.target.value })}
               />
               <input
                 placeholder="To"
+                className="filter-input"
                 value={flightFilter.to}
                 onChange={(e) => setFlightFilter({ ...flightFilter, to: e.target.value })}
               />
               <input
                 type="date"
                 value={flightFilter.date}
+                className="filter-input"
                 onChange={(e) => setFlightFilter({ ...flightFilter, date: e.target.value })}
               />
               <select
                 value={flightFilter.priceOrder}
+                className="filter-input"
                 onChange={(e) => setFlightFilter({ ...flightFilter, priceOrder: e.target.value })}>
                 <option value="">Sort by Price</option>
                 <option value="asc">Low to High</option>
@@ -366,11 +410,13 @@ function CustomizePackage() {
               <h4>Hotels</h4>
               <input
                 placeholder="Location"
+                className="filter-input"
                 value={hotelFilter.location}
                 onChange={(e) => setHotelFilter({ ...hotelFilter, location: e.target.value })}
               />
               <select
                 value={hotelFilter.roomType}
+                className="filter-input"
                 onChange={(e) => setHotelFilter({ ...hotelFilter, roomType: e.target.value })}>
                 <option value="">All Room Types</option>
                 <option value="Single">Single</option>
@@ -379,6 +425,7 @@ function CustomizePackage() {
               </select>
               <select
                 value={hotelFilter.priceOrder}
+                className="filter-input"
                 onChange={(e) => setHotelFilter({ ...hotelFilter, priceOrder: e.target.value })}>
                 <option value="">Sort by Price</option>
                 <option value="asc">Low to High</option>
@@ -391,12 +438,14 @@ function CustomizePackage() {
               <h4>Entertainments</h4>
               <input
                 placeholder="Search location"
+                className="filter-input"
                 value={entFilter.location}
                 onChange={(e) => setEntFilter({ ...entFilter, location: e.target.value })}
                 style={{ width: "100%", marginBottom: "8px", padding: "6px" }}
               />
               <select
                 value={entFilter.priceOrder}
+                className="filter-input"
                 onChange={(e) => setEntFilter({ ...entFilter, priceOrder: e.target.value })}
                 style={{ width: "100%", padding: "6px" }}
               >
@@ -532,7 +581,7 @@ function CustomizePackage() {
                 <button
                   onClick={handleSaveCustomPackage}
                   style={{
-                    background: "#28a745",
+                    background: "#181818",
                     color: "#fff",
                     padding: "10px 20px",
                     border: "none",
@@ -540,6 +589,8 @@ function CustomizePackage() {
                     marginBottom: "10px",
                     cursor: "pointer",
                   }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
                 >
                   Save My Custom Package
                 </button>
@@ -547,7 +598,7 @@ function CustomizePackage() {
                   <Link to="/myPackages">
                     <button
                       style={{
-                        background: "#007bff",
+                        background: "#181818",
                         color: "#fff",
                         padding: "10px 20px",
                         border: "none",
@@ -555,6 +606,8 @@ function CustomizePackage() {
                         cursor: "pointer",
                         marginBottom: "10px",
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
                     >
                       View My Saved Packages
                     </button>
@@ -562,13 +615,15 @@ function CustomizePackage() {
                   <Link to="/myBookings" state={{ background: location }}>
                     <button
                       style={{
-                        background: "#6c63ff",
+                        background: "#181818",
                         color: "#fff",
                         padding: "10px 20px",
                         border: "none",
                         borderRadius: "4px",
                         cursor: "pointer",
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
                     >
                       Confirmed Bookings
                     </button>
@@ -579,41 +634,47 @@ function CustomizePackage() {
           </div>
 
           {/* RIGHT PANEL: TABS & RESULTS */}
-          <div style={{ flex: 1, padding: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-around", marginBottom: "20px", background: "#181818", padding: "10px" }}>
+          <div style={{ flex: 1}}>
+            <div style={{ display: "flex", justifyContent: "space-around", marginBottom: "20px", background: "#181818", padding: "15px", borderTopRightRadius: "8px" }}>
               <button
                 onClick={() => setActiveCategory("flights")}
                 style={{
-                  background: activeCategory === "flights" ? "#fff" : "#181818",
-                  color: activeCategory === "flights" ? "#181818" : "#fff",
+                  background: activeCategory === "flights" ? "#181818" : "#181818",
+                  color: activeCategory === "flights" ? "#fff" : "#fff",
                   padding: "8px 16px",
-                  border: "none",
+                  // border: "2px solid #888",
                   borderRadius: "4px",
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
               >
                 Flights
               </button>
               <button
                 onClick={() => setActiveCategory("hotels")}
                 style={{
-                  background: activeCategory === "hotels" ? "#fff" : "#181818",
-                  color: activeCategory === "hotels" ? "#181818" : "#fff",
+                  background: activeCategory === "hotels" ? "#181818" : "#181818",
+                  color: activeCategory === "hotels" ? "#fff" : "#fff",
                   padding: "8px 16px",
                   border: "none",
                   borderRadius: "4px",
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
               >
                 Hotels
               </button>
               <button
                 onClick={() => setActiveCategory("entertainments")}
                 style={{
-                  background: activeCategory === "entertainments" ? "#fff" : "#181818",
-                  color: activeCategory === "entertainments" ? "#181818" : "#fff",
+                  background: activeCategory === "entertainments" ? "#181818" : "#181818",
+                  color: activeCategory === "entertainments" ? "#fff" : "#fff",
                   padding: "8px 16px",
                   border: "none",
                   borderRadius: "4px",
                 }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#333'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#181818'}
               >
                 Entertainments
               </button>
