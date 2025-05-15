@@ -20,5 +20,5 @@
   "directories": {
     "doc": "docs"
   },
-  "type": "commonjs",
+  "type": "commonjs"
 }
