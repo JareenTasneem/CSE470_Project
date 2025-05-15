@@ -58,5 +58,12 @@ hotelSchema.statics.incrementRoomType = async function(hotelId, roomType, count)
   await hotel.save();
 };
 
+// Add this method to fix the 500 error in cancelBooking
+hotelSchema.statics.incrementRooms = async function (hotelId, count = 1) {
+  const hotel = await this.findById(hotelId);
+  if (!hotel) throw new Error("Hotel not found");
+  hotel.rooms_available += count;
+  await hotel.save();
+};
 
 module.exports = mongoose.model("Hotel", hotelSchema);

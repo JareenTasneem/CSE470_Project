@@ -115,7 +115,15 @@ exports.generateInstallmentInvoice = async (req, res) => {
 exports.generateBookingInvoice = async (req, res) => {
   try {
     const { bookingId } = req.params;
-    const booking = await Booking.findById(bookingId);
+    const booking = await Booking.findById(bookingId)
+      .populate({
+        path: "custom_package",
+        populate: [
+          { path: "flights" },
+          { path: "hotels" },
+          { path: "entertainments" }
+        ]
+      });
     if (!booking || booking.status !== "Confirmed")
       return res.status(404).json({ message: "Invoice not available" });
 
@@ -155,7 +163,16 @@ exports.generateBookingInvoice = async (req, res) => {
 exports.createFullPaymentSession = async (req, res) => {
   try {
     const { bookingId } = req.params;
-    const booking = await Booking.findById(bookingId).populate("tour_package hotelMeta custom_package");
+    const booking = await Booking.findById(bookingId)
+      .populate({
+        path: "custom_package",
+        populate: [
+          { path: "flights" },
+          { path: "hotels" },
+          { path: "entertainments" }
+        ]
+      })
+      .populate("tour_package hotelMeta");
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
     let price = 0;
@@ -170,6 +187,9 @@ exports.createFullPaymentSession = async (req, res) => {
     } else {
       price = booking.total_price || 0;
     }
+    // Add debug logging
+    console.log("[FullPayment] Booking:", booking);
+    console.log("[FullPayment] Calculated price:", price);
     if (price <= 0) return res.status(400).json({ message: "Invalid price" });
 
     // Calculate discounted price based on user's loyalty tier
