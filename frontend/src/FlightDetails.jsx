@@ -6,6 +6,7 @@ import axios from "./axiosConfig";
 const FlightDetails = () => {
   const { id } = useParams();
   const [flight, setFlight] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const autoPlayRef = useRef(null);
@@ -27,6 +28,15 @@ const FlightDetails = () => {
       .catch((err) => {
         console.error("Error fetching flight details:", err);
         alert("Flight not found");
+      });
+
+    axios
+      .get(`http://localhost:5000/api/reviews/item/${id}/Flight`)
+      .then((res) => {
+        setReviews(res.data);
+      })
+      .catch((err) => {
+        console.error("Error fetching reviews:", err);
       });
   }, [id]);
 
@@ -381,6 +391,38 @@ const FlightDetails = () => {
             ← Go Back
           </button>
         </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div style={{ marginTop: "40px" }}>
+        <h3 style={{ color: "#333", marginBottom: "20px" }}>Customer Reviews</h3>
+        {reviews.length > 0 ? (
+          reviews.map((review) => (
+            <div
+              key={review._id}
+              style={{
+                padding: "20px",
+                marginBottom: "20px",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                backgroundColor: "#fff"
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+                <h4 style={{ margin: 0, color: "#333" }}>{review.title}</h4>
+                <div style={{ color: "#666" }}>
+                  Rating: {review.rating}/5
+                </div>
+              </div>
+              <p style={{ color: "#666", marginBottom: "10px" }}>{review.comment}</p>
+              <div style={{ color: "#999", fontSize: "0.9em" }}>
+                By {review.user?.name || "Anonymous"} • {new Date(review.createdAt).toLocaleDateString()}
+              </div>
+            </div>
+          ))
+        ) : (
+          <p style={{ color: "#666", textAlign: "center" }}>No reviews yet. Be the first to review this flight!</p>
+        )}
       </div>
     </div>
   );

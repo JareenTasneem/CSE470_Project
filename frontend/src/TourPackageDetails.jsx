@@ -6,6 +6,7 @@ import { useParams, Link } from "react-router-dom";
 function TourPackageDetails() {
   const { id } = useParams();
   const [pkg, setPkg] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,6 +19,15 @@ function TourPackageDetails() {
       .catch((err) => {
         console.error("Error fetching package details:", err);
         setLoading(false);
+      });
+
+    axios
+      .get(`http://localhost:5000/api/reviews/item/${id}/TourPackage`)
+      .then((res) => {
+        setReviews(res.data);
+      })
+      .catch((err) => {
+        console.error("Error fetching reviews:", err);
       });
   }, [id]);
 
@@ -145,6 +155,38 @@ function TourPackageDetails() {
         >
           Back to Tour Packages
         </Link>
+      </div>
+
+      {/* Reviews Section */}
+      <div style={{ marginTop: "40px" }}>
+        <h3 style={{ color: "#333", marginBottom: "20px" }}>Customer Reviews</h3>
+        {reviews.length > 0 ? (
+          reviews.map((review) => (
+            <div
+              key={review._id}
+              style={{
+                padding: "20px",
+                marginBottom: "20px",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                backgroundColor: "#fff"
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+                <h4 style={{ margin: 0, color: "#333" }}>{review.title}</h4>
+                <div style={{ color: "#666" }}>
+                  Rating: {review.rating}/5
+                </div>
+              </div>
+              <p style={{ color: "#666", marginBottom: "10px" }}>{review.comment}</p>
+              <div style={{ color: "#999", fontSize: "0.9em" }}>
+                By {review.user?.name || "Anonymous"} • {new Date(review.createdAt).toLocaleDateString()}
+              </div>
+            </div>
+          ))
+        ) : (
+          <p style={{ color: "#666", textAlign: "center" }}>No reviews yet. Be the first to review this package!</p>
+        )}
       </div>
     </div>
   );
