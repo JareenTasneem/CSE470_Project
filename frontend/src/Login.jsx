@@ -4,6 +4,7 @@ import axios from "./axiosConfig";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { AuthContext } from "./contexts/AuthContext";
 import { toast } from "react-toastify";
+import "./styles/style.css";
 
 function Login() {
   const navigate = useNavigate();
@@ -72,94 +73,117 @@ function Login() {
   };
 
   return (
-    <div style={{ 
-      maxWidth: "400px", 
-      margin: "2rem auto", 
-      padding: "2rem",
-      boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-      borderRadius: "8px",
-      backgroundColor: isBanned ? "#fff5f5" : "white"
-    }}>
-      <h2 style={{ 
-        textAlign: "center", 
-        marginBottom: "1.5rem",
-        color: isBanned ? "#dc3545" : "inherit"
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundImage: "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative",
+      }}
+    >
+      {/* Blurred overlay */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backdropFilter: "blur(5px)",
+          backgroundColor: "rgba(0, 0, 0, 0.4)",
+          zIndex: 0,
+        }}
+      />
+      <div style={{ 
+        maxWidth: "400px", 
+        width: "100%",
+        margin: "2rem", 
+        padding: "2rem",
+        boxShadow: "0 0 15px rgba(0,0,0,0.2)",
+        borderRadius: "8px",
+        backgroundColor: isBanned ? "#fff5f5" : "white",
+        position: "relative",
+        zIndex: 1,
       }}>
-        {isBanned ? "ACCOUNT BANNED" : "Login"}
-      </h2>
-      <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <div>
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>Email</label>
-          <input
-            type="email"
-            value={email}
-            required
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ 
-              width: "100%", 
-              padding: "0.5rem", 
-              borderRadius: "4px", 
-              border: isBanned ? "2px solid #dc3545" : "1px solid #ccc",
-              backgroundColor: isBanned ? "#fff5f5" : "white"
-            }}
-          />
-        </div>
-
-        <div>
-          <label style={{ display: "block", marginBottom: "0.5rem" }}>Password</label>
-          <input
-            type="password"
-            value={password}
-            required
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ 
-              width: "100%", 
-              padding: "0.5rem", 
-              borderRadius: "4px", 
-              border: isBanned ? "2px solid #dc3545" : "1px solid #ccc",
-              backgroundColor: isBanned ? "#fff5f5" : "white"
-            }}
-          />
-        </div>
-
-        <button 
-          type="submit"
-          style={{
-            padding: "0.75rem",
-            backgroundColor: isBanned ? "#dc3545" : "#232946",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: isBanned ? "not-allowed" : "pointer",
-            fontSize: "1rem",
-            opacity: isBanned ? 0.7 : 1
-          }}
-          disabled={isBanned}
-        >
-          {isBanned ? "BANNED" : "Login"}
-        </button>
-      </form>
-
-      {error && (
-        <p style={{ 
-          color: isBanned ? "#dc3545" : "#d32f2f", 
-          marginTop: "1rem", 
-          textAlign: "center",
-          fontWeight: isBanned ? "bold" : "normal",
-          fontSize: isBanned ? "1.2rem" : "1rem"
+        <h2 style={{ 
+          textAlign: "center", 
+          marginBottom: "1.5rem",
+          color: isBanned ? "#dc3545" : "inherit"
         }}>
-          {error}
-        </p>
-      )}
+          {isBanned ? "ACCOUNT BANNED" : "Login"}
+        </h2>
+        <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem" }}>Email</label>
+            <input
+              type="email"
+              value={email}
+              required
+              onChange={(e) => setEmail(e.target.value)}
+              className="filter-input"
+              style={{ 
+                width: "100%",
+              }}
+            />
+          </div>
 
-      {!isBanned && (
-        <p style={{ textAlign: "center", marginTop: "1rem" }}>
-          Don't have an account?{" "}
-          <Link to="/signup" style={{ color: "#232946", textDecoration: "none", fontWeight: "bold" }}>
-            Sign up here
-          </Link>
-        </p>
-      )}
+          <div>
+            <label style={{ display: "block", marginBottom: "0.5rem" }}>Password</label>
+            <input
+              type="password"
+              value={password}
+              required
+              className="filter-input"
+              onChange={(e) => setPassword(e.target.value)}
+              style={{ 
+                width: "100%",
+              }}
+            />
+          </div>
+
+          <button 
+            type="submit"
+            style={{
+              padding: "0.75rem",
+              backgroundColor: isBanned ? "#dc3545" : "#232946",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: isBanned ? "not-allowed" : "pointer",
+              fontSize: "1rem",
+              opacity: isBanned ? 0.7 : 1
+            }}
+            disabled={isBanned}
+          >
+            {isBanned ? "BANNED" : "Login"}
+          </button>
+        </form>
+
+        {error && (
+          <p style={{ 
+            color: isBanned ? "#dc3545" : "#d32f2f", 
+            marginTop: "1rem", 
+            textAlign: "center",
+            fontWeight: isBanned ? "bold" : "normal",
+            fontSize: isBanned ? "1.2rem" : "1rem"
+          }}>
+            {error}
+          </p>
+        )}
+
+        {!isBanned && (
+          <p style={{ textAlign: "center", marginTop: "1rem" }}>
+            Don't have an account?{" "}
+            <Link to="/signup" style={{ color: "#232946", textDecoration: "none", fontWeight: "bold" }}>
+              Sign up here
+            </Link>
+          </p>
+        )}
+      </div>
     </div>
   );
 }

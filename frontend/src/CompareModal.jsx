@@ -172,48 +172,32 @@ const CompareModal = ({
                       <p><strong>Price:</strong> ${itemPrice}</p>
                       <p style={{ fontStyle: "italic", color: "#555" }}>{differenceText}</p>
 
-                      <div style={{ marginTop: "10px", display: "flex", gap: "10px", justifyContent: "center", width: "500px" , height: "40px", align: "center"}}>
-                        <Link
-                          to={`/flights/details/${item._id}`}
-                          // style={{
-                          //   padding: "6px 12px",
-                          //   backgroundColor: "#007bff",
-                          //   color: "#fff",
-                          //   borderRadius: "4px",
-                          //   textDecoration: "none",
-                          //   fontWeight: "500",
-                          //   textAlign: "center",
-                            // width: "150px",
-                            // height: "40px",
-                          // }}
-                        >
+                      <div style={{ marginTop: "10px", display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "space-between" }}>
+                        <Link to={`/flights/details/${item._id}`}>
                           <button style={{
-                              padding: "6px 12px",
-                              backgroundColor: "#181818",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              fontWeight: "500",
-                              width: "125px",
+                            padding: "6px 12px",
+                            backgroundColor: "#181818",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontWeight: "500",
+                            width: "125px",
                           }}>
                             View Details
                           </button>
                         </Link>
-                        <Link to={`/book-flight/${item._id}`} >
-                          <button
-                            style={{
-                              padding: "6px 12px",
-                              backgroundColor: "#28a745",
-                              color: "#fff",
-                              border: "none",
-                              borderRadius: "4px",
-                              cursor: "pointer",
-                              fontWeight: "500",
-                              width: "125px",
-                              height: "40px",
-                            }}
-                          >
+                        <Link to={`/book-flight/${item._id}`}>
+                          <button style={{
+                            padding: "6px 12px",
+                            backgroundColor: "#28a745",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontWeight: "500",
+                            width: "125px",
+                          }}>
                             Book Now
                           </button>
                         </Link>
@@ -229,13 +213,13 @@ const CompareModal = ({
                               cursor: "pointer",
                               fontWeight: "500",
                               width: "125px",
-                              // height: "40px",
                             }}
                           >
                             Compare
                           </button>
                         )}
                       </div>
+
                     </>
                   ) : (
                     <>

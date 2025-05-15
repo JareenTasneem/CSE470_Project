@@ -3,6 +3,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "./axiosConfig";
 import { AuthContext } from "./contexts/AuthContext";
+import "./styles/style.css";
 
 const BookFlight = () => {
   const { id } = useParams();
@@ -84,6 +85,8 @@ const BookFlight = () => {
         padding: "40px",
         background: "#f4f4f4",
         minHeight: "100vh",
+        border: "1px solid #ddd", 
+        boxShadow: "0 2px 8px rgba(0,0,0,0.2)"
       }}
     >
       <form
@@ -103,31 +106,32 @@ const BookFlight = () => {
         </h2>
 
         <label>Name:</label>
-        <input type="text" value={user.name} disabled style={inputStyle} />
+        <input type="text" value={user.name} disabled className="filter-input" style={inputStyle} />
 
         <label>Email:</label>
-        <input type="email" value={user.email} disabled style={inputStyle} />
+        <input type="email" value={user.email} disabled className="filter-input" style={inputStyle} />
 
         <label>From:</label>
-        <input type="text" value={flight.from} disabled style={inputStyle} />
+        <input type="text" value={flight.from} disabled className="filter-input" style={inputStyle} />
 
         <label>To:</label>
-        <input type="text" value={flight.to} disabled style={inputStyle} />
+        <input type="text" value={flight.to} disabled className="filter-input" style={inputStyle} />
 
         <label>Date:</label>
         <input
           type="text"
+          className="filter-input"
           value={new Date(flight.date).toLocaleDateString()}
           disabled
           style={inputStyle}
         />
 
         <label>Price:</label>
-        <input type="text" value={`$${flight.price}`} disabled style={inputStyle} />
+        <input type="text" value={`$${flight.price}`} disabled className="filter-input" style={inputStyle} />
 
         {/* NEW seat class selector */}
         <label>Class:</label>
-        <select value={seatClass} onChange={(e) => setSeatClass(e.target.value)} style={inputStyle}>
+        <select value={seatClass} onChange={(e) => setSeatClass(e.target.value)} className="filter-input" style={inputStyle}>
           <option value="economy">Economy</option>
           <option value="business">Business</option>
         </select>
@@ -137,6 +141,7 @@ const BookFlight = () => {
           type="number"
           min={1}
           value={qty}
+          className="filter-input"
           onChange={(e) => setQty(Number(e.target.value))}
           required
           style={inputStyle}

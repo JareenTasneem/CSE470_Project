@@ -17,17 +17,25 @@ export default function InstallmentPlan() {
 
   /* load (or create) plan */
   useEffect(() => {
-    if (!user) return;
-    setLoading(true);
-    axios
-      .post(`/payments/create/${bookingId}`)
-      .then((res) => setPlan(res.data))
-      .catch((err) => {
+    if (!user || !bookingId) return; // wait until both are ready
+
+    const fetchPlan = async () => {
+      try {
+        setLoading(true);
+        const res = await axios.post(`/payments/create/${bookingId}`);
+        setPlan(res.data);
+        setError(""); // clear error on success
+      } catch (err) {
         console.error("Error loading plan:", err);
         setError("Unable to load payment plan.");
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlan();
   }, [bookingId, user]);
+
 
   /* pay one installment */
   const handlePay = async (paymentId) => {
@@ -61,61 +69,89 @@ export default function InstallmentPlan() {
   if (error)   return <p>{error}</p>;
 
   return (
-    <div>
-      {paymentSuccess && (
-        <div style={{
-          backgroundColor: "#d4edda",
-          color: "#155724",
-          padding: 10,
-          borderRadius: 6,
-          marginBottom: 16,
-          border: "1px solid #c3e6cb",
-        }}>
-          ✅ Payment Successful!
-        </div>
-      )}
+    <div style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      minHeight: "100vh",
+      backgroundColor: "#f8f9fa",
+    }}>
+      <div style={{
+        backgroundColor: "#fff",
+        padding: "2rem",
+        borderRadius: "8px",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+        maxWidth: "600px",
+        width: "100%",
+      }}>
+        {paymentSuccess && (
+          <div style={{
+            backgroundColor: "#d4edda",
+            color: "#155724",
+            padding: 10,
+            borderRadius: 6,
+            marginBottom: 16,
+            border: "1px solid #c3e6cb",
+          }}>
+            ✅ Payment Successful!
+          </div>
+        )}
 
-      <h2>Installment Plan for Booking #{bookingId}</h2>
+        <h2 style={{ marginBottom: "1.5rem" }}>Installment Plan for Booking #{bookingId}</h2>
 
-      {plan.map((inst) => (
-        <div key={inst._id} style={{ marginBottom: 12 }}>
-          <strong>#{inst.installmentNumber}</strong>{" "}
-          ${inst.amount.toFixed(2)} — {inst.status}
-          {inst.status === "Paid" && (
-            <a
-              href={`${API_BASE}/payments/invoice/installment/${inst._id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                marginLeft: 10,
-                backgroundColor: "#007bff",
-                color: "#fff",
-                padding: "4px 10px",
-                borderRadius: 4,
-                textDecoration: "none",
-              }}
-            >
-              Download Invoice
-            </a>
-          )}
-          {inst.status === "Unpaid" && (
-            <button
-              onClick={() => handlePay(inst._id)}
-              style={{
-                marginLeft: 10,
-                backgroundColor: "#28a745",
-                color: "#fff",
-                border: "none",
-                padding: "4px 10px",
-                borderRadius: 4,
-                cursor: "pointer",
-              }}
-            >
-              Pay Now
-            </button>
-          )}
-        </div>
-      ))}
+        {plan.map((inst) => (
+          <div key={inst._id} style={{
+            marginBottom: 12,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "10px",
+            border: "1px solid #dee2e6",
+            borderRadius: "6px"
+          }}>
+            <div>
+              <strong>#{inst.installmentNumber}</strong>{" "}
+              ${inst.amount.toFixed(2)} — {inst.status}
+            </div>
+
+            <div>
+              {inst.status === "Paid" && (
+                <a
+                  href={`${API_BASE}/payments/invoice/installment/${inst._id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    backgroundColor: "#007bff",
+                    color: "#fff",
+                    padding: "4px 10px",
+                    borderRadius: 4,
+                    textDecoration: "none",
+                    marginLeft: 8,
+                  }}
+                >
+                  Invoice
+                </a>
+              )}
+              {inst.status === "Unpaid" && (
+                <button
+                  onClick={() => handlePay(inst._id)}
+                  style={{
+                    backgroundColor: "#28a745",
+                    color: "#fff",
+                    border: "none",
+                    padding: "4px 10px",
+                    borderRadius: 4,
+                    cursor: "pointer",
+                    marginLeft: 8,
+                  }}
+                >
+                  Pay Now
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
