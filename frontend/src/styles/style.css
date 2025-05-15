@@ -461,3 +461,54 @@ footer p{
   border: 2px solid #555;
   outline: none;
 }
+.booking-card {
+  position: relative;
+  padding-bottom: 60px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.booking-info {
+  flex-grow: 1;
+}
+
+.booking-buttons {
+  position: absolute;
+  bottom: 15px;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 10px;
+  padding: 0 15px;
+}
+
+.booking-button {
+  flex: 1;
+  padding: 10px 0;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.refund-button {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.refund-button:hover {
+  background-color: #e0a800;
+}
+
+.download-button {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.download-button:hover {
+  background-color: #218838;
+}

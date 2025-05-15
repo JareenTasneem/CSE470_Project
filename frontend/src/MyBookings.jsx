@@ -4,7 +4,7 @@ import { AuthContext } from "./contexts/AuthContext";
 import axios from "./axiosConfig";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from './components/Navbar';
-
+import "./styles/style.css";
 const MyBookings = ({ setShowModal }) => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -204,6 +204,7 @@ const MyBookings = ({ setShowModal }) => {
                         </span>
                         <button
                           onClick={() => navigate(`/refund-status/${booking._id}`)}
+                          className="booking-button status-button"
                           style={{
                             padding: '8px 16px',
                             backgroundColor: '#007bff',
@@ -219,6 +220,8 @@ const MyBookings = ({ setShowModal }) => {
                     ) : (
                       <button
                         onClick={() => navigate(`/refund/${booking._id}`)}
+                        className="booking-button refund-button"
+
                         style={{
                           padding: "8px 16px",
                           backgroundColor: "#ffc107",
@@ -237,6 +240,8 @@ const MyBookings = ({ setShowModal }) => {
                     <a
                       href={`http://localhost:5000/api/payments/invoice/booking/${booking._id}`}
                       target="_blank"
+                      className="booking-button download-button"
+
                       rel="noopener noreferrer"
                       style={{
                         padding: "8px 16px",
