@@ -3,6 +3,7 @@ import React, { useEffect, useState, useContext } from "react";
 import axios from "./axiosConfig";
 import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "./contexts/AuthContext";
+import bookingController from "./controllers/bookingController";
 
 const BookHotel = () => {
   const { id } = useParams(); // Hotel ID from URL
@@ -80,35 +81,20 @@ const BookHotel = () => {
     if (!validateAvailability()) return;
   
     try {
-      setLoading(true); // 🚀 Start loading state
-  
-      const res = await axios.post("/bookings", {
-        hotel: id,
-        roomType: formData.roomType,
-        numberOfRooms: parseInt(formData.numberOfRooms),
-        name: formData.name,
-        email: formData.email,
-        numberOfPeople: parseInt(formData.numberOfPeople),
-        startDate: formData.startDate,
-        endDate: formData.endDate,
-        departureCity: formData.departureCity || "N/A",
-        hotelMeta: {
-          hotel_name: hotel.hotel_name,
-          location: hotel.location,
-          image: hotel.images?.[0] || "/default.jpg",
-          price_per_night: hotel.price_per_night
-        }
-      }, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-  
+      setLoading(true);
+      await bookingController.createHotelBooking(hotel, formData, user.token);
       alert("Hotel booked successfully!");
-      navigate("/");
+      navigate("/confirmedBookings");
     } catch (err) {
       console.error("Error booking hotel:", err);
-      alert("Booking failed. Please try again.");
+      if (err.response?.status === 401) {
+        alert("Your session has expired. Please log in again.");
+        navigate("/login");
+      } else {
+        alert(err.response?.data?.message || "Booking failed. Please try again.");
+      }
     } finally {
-      setLoading(false); // ✅ Always clear loading state
+      setLoading(false);
     }
   };
   

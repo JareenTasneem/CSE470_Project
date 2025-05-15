@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "./contexts/AuthContext";
 import axios from "./axiosConfig";
 import { useNavigate } from "react-router-dom";
+import bookingController from "./controllers/bookingController";
 // import { toast } from "react-toastify"; //Added extra
 // import "react-toastify/dist/ReactToastify.css"; //Added extra
 
@@ -19,47 +20,48 @@ function ConfirmedBookings() {
           headers: { Authorization: `Bearer ${user.token}` },
         })
         .then((res) =>
-          setReviewedIds(res.data.map((rv) => rv.bookingId)) // ← we added bookingId in the API
+          setReviewedIds(res.data.map((rv) => rv.bookingId))
         )
         .catch(() => {});
     }
   }, [user]);
 
-  // ✅ fetch bookings
   useEffect(() => {
-    if (user) {
-      axios
-        .get("http://localhost:5000/api/bookings/user", {
-          headers: { Authorization: `Bearer ${user.token}` },
-        })
-        .then((res) => {
-          const filteredBookings = res.data.filter(
-            (booking) => booking.status !== "Cancelled"
-          );
-          setConfirmedBookings(filteredBookings);
-        })
-        .catch((err) => {
+    const fetchBookings = async () => {
+      if (user) {
+        try {
+          const bookings = await bookingController.getUserBookings(user.token);
+          setConfirmedBookings(bookings);
+        } catch (err) {
           console.error("Error fetching confirmed bookings:", err);
-          setError("Failed to load confirmed bookings.");
-        });
-    }
-  }, [user]);
+          if (err.response?.status === 401) {
+            alert("Your session has expired. Please log in again.");
+            navigate("/login");
+          } else {
+            setError("Failed to load confirmed bookings.");
+          }
+        }
+      }
+    };
 
-  // ✅ delete booking
-  const handleDelete = (bookingId) => {
-    axios
-      .delete(`http://localhost:5000/api/bookings/${bookingId}`, {
-        headers: { Authorization: `Bearer ${user.token}` },
-      })
-      .then((res) => {
-        alert("Booking deleted successfully.");
-        setConfirmedBookings((prevBookings) =>
-          prevBookings.filter((booking) => booking._id !== bookingId)
-        );
-      })
-      .catch((err) => {
+    fetchBookings();
+  }, [user, navigate]);
+
+  const handleDelete = async (bookingId) => {
+    try {
+      await bookingController.deleteBooking(bookingId, user.token);
+      alert("Booking deleted successfully.");
+      setConfirmedBookings((prevBookings) =>
+        prevBookings.filter((booking) => booking._id !== bookingId)
+      );
+    } catch (err) {
+      if (err.response?.status === 401) {
+        alert("Your session has expired. Please log in again.");
+        navigate("/login");
+      } else {
         alert("Failed to delete booking.");
-      });
+      }
+    }
   };
 
   // ✅ render single booking
@@ -78,6 +80,18 @@ function ConfirmedBookings() {
       ? item.custom_package?.entertainments || []
       : item.entertainments || [];
 
+    // Add single hotel booking details
+    if (item.hotelMeta && !isCustom && !item.tour_package && !item.flights?.length) {
+      hotels.push({
+        _id: item._id,
+        hotel_name: item.hotelMeta.hotel_name,
+        location: item.hotelMeta.location,
+        price_per_night: item.hotelMeta.price_per_night,
+        roomType: item.hotel_room_details?.roomType,
+        numberOfRooms: item.hotel_room_details?.numberOfRooms
+      });
+    }
+
     // 🧮 Total price calculation
     const customTotal =
       flights.reduce((sum, f) => sum + (f.price || 0), 0) +
@@ -87,45 +101,41 @@ function ConfirmedBookings() {
     const totalPrice = isCustom ? customTotal : item.total_price || 0;
 
     let title;
+    let bookingType;
 
     if (isCustom) {
       title = `Custom Package ID: ${item.custom_package?.custom_id || "N/A"}`;
+      bookingType = "Custom Package";
     } else if (item.tour_package) {
       title = item.tour_package.package_title;
+      bookingType = "Tour Package";
     } else if (item.flights?.length === 1 && (!item.hotels || item.hotels.length === 0)) {
       title = `Flight Booking: ${item.flights[0].airline_name}`;
-    } else if (item.hotels?.length === 1 && (!item.flights || item.flights.length === 0)) {
-      title = `Hotel Booking: ${item.hotels[0].hotel_name}`;
+      bookingType = "Flight";
+    } else if (item.hotelMeta || (item.hotels?.length === 1 && (!item.flights || item.flights.length === 0))) {
+      title = `Hotel Booking: ${item.hotelMeta?.hotel_name || item.hotels[0].hotel_name}`;
+      bookingType = "Hotel";
     } else {
       title = "Tour Package Booking";
+      bookingType = "Package";
     }
 
     return (
       <div 
         key={item._id}
         style={{ 
-          display: "grid", 
-          gridTemplateColumns: "repeat(auto-fill, minmax(550px, 1fr))", 
-          gap: "40px", 
-          marginTop: "50px",
-          width: "90%",
-          justifyItems: "center",
-          alignItems: "start", 
-          marginLeft: "auto",        
-          marginRight: "auto"
+          margin: "20px",
+          width: "330px",
         }}>
         <div
           style={{
             display: "grid",
-            // flexDirection: "column",
-            // justifyContent: "space-between",
             padding: "15px",
             border: "1px solid #ccc",
             borderRadius: "8px",
-            margin: "20px",
             background: "#fff",
             boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
-            width: "330px",
+            width: "100%",
             height: "550px",
             transition: "all 0.3s ease-in-out",
             transform: "translateY(0px)" 
@@ -133,7 +143,7 @@ function ConfirmedBookings() {
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = "translateY(-8px)";
             e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.3)";
-            e.currentTarget.style.background = "#f5f5f5"; // slightly lighter grey
+            e.currentTarget.style.background = "#f5f5f5";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = "translateY(0px)";
@@ -143,6 +153,7 @@ function ConfirmedBookings() {
         >
           <div style={{ flex: 1 }}>
             <h4>{title}</h4>
+            <p>Booking Type: {bookingType}</p>
             <p>Status: {item.status}</p>
             <p>Total Price: ${totalPrice}</p>
             <p>Booking Date: {new Date(item.createdAt).toLocaleDateString()}</p>
@@ -177,7 +188,13 @@ function ConfirmedBookings() {
                 <ul style={{ listStyleType: "disc", paddingLeft: "20px" }}>
                   {hotels.map((h) => (
                     <li key={h._id}>
-                      <strong>{h.hotel_name}</strong> in <em>{h.location}</em> (Price per night: ${h.price_per_night})
+                      <strong>{h.hotel_name}</strong> in <em>{h.location}</em>
+                      <br />
+                      Room Type: {h.roomType || "Standard"}
+                      <br />
+                      Number of Rooms: {h.numberOfRooms || 1}
+                      <br />
+                      Price per night: ${h.price_per_night}
                     </li>
                   ))}
                 </ul>
@@ -297,7 +314,18 @@ function ConfirmedBookings() {
       {error ? (
         <p>{error}</p>
       ) : confirmedBookings.length > 0 ? (
-        confirmedBookings.map((booking) => renderBookingItem(booking))
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "32px",
+            justifyContent: "center",
+            alignItems: "flex-start",
+            marginTop: "40px",
+          }}
+        >
+          {confirmedBookings.map((booking) => renderBookingItem(booking))}
+        </div>
       ) : (
         <p>No confirmed bookings yet.</p>
       )}
