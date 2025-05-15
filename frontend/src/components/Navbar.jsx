@@ -282,11 +282,22 @@ const Navbar = () => {
       height: "90px",
       boxSizing: "border-box"
     }}>
-      <h4 style={{ 
-        color: "#fff", 
-        margin: 0,
-        fontSize: "clamp(1rem, 2vw, 1.5rem)"
-      }}>Travel Agency</h4>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <Link to="/home" style={{ 
+          textDecoration: "none", 
+          color: "#fff",
+          fontSize: "clamp(1.5rem, 2vw, 2rem)",
+          display: "flex",
+          alignItems: "center"
+        }}>
+          🏠
+        </Link>
+        <h4 style={{ 
+          color: "#fff", 
+          margin: 0,
+          fontSize: "clamp(1rem, 2vw, 1.5rem)"
+        }}>Travel Agency</h4>
+      </div>
       <button
         onClick={() => setShowMenu(!showMenu)}
         style={{

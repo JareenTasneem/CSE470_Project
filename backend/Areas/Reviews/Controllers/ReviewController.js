@@ -10,9 +10,18 @@ const getUserId = (req) => req.user?.userId || req.user?._id;
 
 const getItemDisplayName = (review) => {
   if (!review.item) return 'Unknown item';
+  // If item is just an ObjectId, we can't get hotel_name directly
+  if (review.item_type === 'Hotel') {
+    if (typeof review.item === 'object' && review.item.hotel_name) {
+      // Populated hotel
+      return review.item.hotel_name + (review.item.location ? ` in ${review.item.location}` : '');
+    } else if (typeof review.item === 'string' || review.item instanceof mongoose.Types.ObjectId) {
+      // Not populated, fallback to ID (will be handled in getMyReviews)
+      return undefined;
+    }
+  }
   switch (review.item_type) {
     case 'TourPackage':   return review.item.package_title;
-    case 'Hotel':         return review.item.hotel_name || review.item.name;
     case 'Flight':        return `${review.item.airline_name} (${review.item.from} → ${review.item.to})`;
     case 'Entertainment': return review.item.entertainmentName;
     default:              return review.item.name || 'Item';
@@ -130,12 +139,33 @@ const ReviewController = {
         .populate({ path: 'item', strictPopulate: false })
         .sort({ createdAt: -1 });
 
+      // For hotel reviews where item is not populated, fetch hotel name
+      const hotelIdsToFetch = reviews
+        .filter(r => r.item_type === 'Hotel' && (!r.item || !r.item.hotel_name))
+        .map(r => r.item);
+      let hotelMap = {};
+      if (hotelIdsToFetch.length > 0) {
+        const Hotel = require('../../Hotels/Models/Hotel');
+        const hotels = await Hotel.find({ _id: { $in: hotelIdsToFetch } });
+        hotelMap = hotels.reduce((acc, h) => {
+          acc[h._id.toString()] = h;
+          return acc;
+        }, {});
+      }
+
       res.json(
-        reviews.map((r) => ({
-          ...r._doc,
-          itemName:  getItemDisplayName(r) || r.item_type,
-          bookingId: r.booking.toString(),
-        }))
+        reviews.map((r) => {
+          let itemName = getItemDisplayName(r) || r.item_type;
+          if (r.item_type === 'Hotel' && (!r.item || !r.item.hotel_name)) {
+            const h = hotelMap[r.item?.toString?.() || r.item];
+            if (h) itemName = h.hotel_name + (h.location ? ` in ${h.location}` : '');
+          }
+          return {
+            ...r._doc,
+            itemName,
+            bookingId: r.booking.toString(),
+          };
+        })
       );
     } catch (err) {
       console.error('getMyReviews →', err);

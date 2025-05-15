@@ -79,7 +79,7 @@ const WriteReview = () => {
                     });
                 });
             }
-            // Hotels
+            // Hotels (array)
             if (booking.hotels && booking.hotels.length > 0) {
                 booking.hotels.forEach(h => {
                     items.push({
@@ -87,6 +87,15 @@ const WriteReview = () => {
                         id: h._id,
                         name: (h.hotel_name ? h.hotel_name : 'Hotel') + (h.location ? ` in ${h.location}` : '')
                     });
+                });
+            }
+            // Single Hotel (for direct hotel bookings)
+            if (booking.hotel && (!booking.hotels || !booking.hotels.some(h => h._id === booking.hotel._id))) {
+                // Only add if not already in hotels array
+                items.push({
+                    type: 'Hotel',
+                    id: booking.hotel._id,
+                    name: (booking.hotel.hotel_name ? booking.hotel.hotel_name : 'Hotel') + (booking.hotel.location ? ` in ${booking.hotel.location}` : '')
                 });
             }
             // Custom Package
