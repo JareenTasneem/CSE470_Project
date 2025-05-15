@@ -123,8 +123,6 @@ function ConfirmedBookings() {
     }
 
     return (
-      <div>
-      <Navbar />
       <div 
         key={item._id}
         style={{ 
@@ -309,11 +307,12 @@ function ConfirmedBookings() {
           </div>
         </div>
       </div>
-      </div>
     );
   };
 
   return (
+    <div>
+    <Navbar />
     <div>
       <h2 style={{textAlign: "center", marginTop: "70px"}}>My Confirmed Bookings</h2>
       {error ? (
@@ -334,6 +333,7 @@ function ConfirmedBookings() {
       ) : (
         <p>No confirmed bookings yet.</p>
       )}
+    </div>
     </div>
   );
 }
