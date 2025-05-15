@@ -125,7 +125,7 @@ function ConfirmedBookings() {
         key={item._id}
         style={{ 
           margin: "20px",
-          width: "330px",
+          minWidth: "850px",
         }}>
         <div
           style={{
@@ -135,8 +135,8 @@ function ConfirmedBookings() {
             borderRadius: "8px",
             background: "#fff",
             boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
-            width: "100%",
-            height: "550px",
+            width: "auto",
+            height: "auto",
             transition: "all 0.3s ease-in-out",
             transform: "translateY(0px)" 
           }}
@@ -310,7 +310,7 @@ function ConfirmedBookings() {
 
   return (
     <div>
-      <h2>Your Confirmed Bookings</h2>
+      <h2 style={{textAlign: "center", marginTop: "70px"}}>My Confirmed Bookings</h2>
       {error ? (
         <p>{error}</p>
       ) : confirmedBookings.length > 0 ? (

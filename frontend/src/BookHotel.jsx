@@ -4,6 +4,7 @@ import axios from "./axiosConfig";
 import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "./contexts/AuthContext";
 import bookingController from "./controllers/bookingController";
+import "./styles/style.css";
 
 const BookHotel = () => {
   const { id } = useParams(); // Hotel ID from URL
@@ -102,16 +103,16 @@ const BookHotel = () => {
   if (!user || !hotel) return <p>Loading...</p>;
 
   return (
-    <div style={{ maxWidth: "600px", margin: "30px auto", padding: "20px", border: "1px solid #ccc", borderRadius: "8px", fontFamily: "Poppins, sans-serif" }}>
+    <div style={{ maxWidth: "600px", margin: "30px auto", padding: "20px", border: "1px solid #ccc", borderRadius: "8px", fontFamily: "Poppins, sans-serif", border: "1px solid #ddd", boxShadow: "0 2px 8px rgba(0,0,0,0.2)" }}>
       <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Book Hotel: {hotel.hotel_name}</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ padding: "15px"}}>
         <div>
           <label>Name:</label>
-          <input name="name" value={formData.name} disabled style={{ width: "100%", padding: "8px", marginBottom: "10px" }} />
+          <input name="name" value={formData.name} disabled style={{ width: "100%", padding: "8px", marginBottom: "10px" }} className="filter-input"/>
         </div>
         <div>
           <label>Email:</label>
-          <input name="email" value={formData.email} disabled style={{ width: "100%", padding: "8px", marginBottom: "10px" }} />
+          <input name="email" value={formData.email} disabled style={{ width: "100%", padding: "8px", marginBottom: "10px" }} className="filter-input"/>
         </div>
         <div>
           <label>Room Type:</label>
@@ -125,6 +126,7 @@ const BookHotel = () => {
               marginBottom: "10px",
               borderColor: errors.roomType ? "red" : "#ccc"
             }}
+            className="filter-input"
             required
           >
             <option value="">Select a room type</option>
@@ -146,6 +148,7 @@ const BookHotel = () => {
             min={1}
             onChange={handleChange}
             required
+            className="filter-input"
             style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
         </div>
@@ -159,6 +162,7 @@ const BookHotel = () => {
             min={1}
             onChange={handleChange}
             required
+            className="filter-input"
             style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
         </div>
@@ -171,6 +175,7 @@ const BookHotel = () => {
             value={formData.startDate}
             onChange={handleChange}
             required
+            className="filter-input"
             style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
         </div>
@@ -183,6 +188,7 @@ const BookHotel = () => {
             value={formData.endDate}
             onChange={handleChange}
             required
+            className="filter-input"
             style={{ width: "100%", padding: "8px", marginBottom: "10px" }}
           />
         </div>
@@ -193,12 +199,14 @@ const BookHotel = () => {
           style={{
             width: "100%",
             padding: "12px",
-            backgroundColor: loading ? "#6c757d" : "#007BFF",
+            backgroundColor: loading ? "#181818" : "#181818",
             color: "white",
             border: "none",
             borderRadius: "4px",
-            cursor: loading ? "not-allowed" : "pointer"
+            cursor: loading ? "not-allowed" : "pointer",
+            marginTop: "20px"
           }}
+          className="filter-input"
         >
           {loading ? "Booking..." : "Confirm Booking"}
         </button>

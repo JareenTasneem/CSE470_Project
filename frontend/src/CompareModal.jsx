@@ -142,8 +142,20 @@ const CompareModal = ({
                     borderRadius: "6px", 
                     padding: "10px",
                     marginBottom: "15px",
-                    backgroundColor: "#fff"
+                    backgroundColor: "#fff",
+                    transition: "all 0.3s ease-in-out",
+                    transform: "translateY(0px)" 
                   }}
+                  onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-8px)";
+                  e.currentTarget.style.boxShadow = "0 8px 20px rgba(0,0,0,0.3)";
+                  e.currentTarget.style.background = "#f5f5f5"; // slightly lighter grey
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0px)";
+                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
+                  e.currentTarget.style.background = "#fff";
+                }}
                 >
                   {/* FULL card layout for each "other" item */}
                   {type === "flight" ? (
@@ -163,19 +175,30 @@ const CompareModal = ({
                       <div style={{ marginTop: "10px", display: "flex", gap: "10px", justifyContent: "center", width: "500px" , height: "40px", align: "center"}}>
                         <Link
                           to={`/flights/details/${item._id}`}
-                          style={{
-                            padding: "6px 12px",
-                            backgroundColor: "#007bff",
-                            color: "#fff",
-                            borderRadius: "4px",
-                            textDecoration: "none",
-                            fontWeight: "500",
-                            textAlign: "center",
+                          // style={{
+                          //   padding: "6px 12px",
+                          //   backgroundColor: "#007bff",
+                          //   color: "#fff",
+                          //   borderRadius: "4px",
+                          //   textDecoration: "none",
+                          //   fontWeight: "500",
+                          //   textAlign: "center",
                             // width: "150px",
                             // height: "40px",
-                          }}
+                          // }}
                         >
-                          View Details
+                          <button style={{
+                              padding: "6px 12px",
+                              backgroundColor: "#181818",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontWeight: "500",
+                              width: "125px",
+                          }}>
+                            View Details
+                          </button>
                         </Link>
                         <Link to={`/book-flight/${item._id}`} >
                           <button
@@ -230,9 +253,27 @@ const CompareModal = ({
                       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px" }}>
                         <Link 
                           to={`/hotels/details/${item._id}`} 
-                          style={{ textDecoration: "none", color: "#007bff", fontWeight: "500" }}
                         >
-                          View Details
+                          <button style={{
+                              padding: "6px 12px",
+                              backgroundColor: "#181818",
+                              color: "#fff",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer",
+                              fontWeight: "500",
+                              width: "125px",
+                          }}
+                          onMouseOver={(e) => {
+                            e.target.style.background = "#2a2a2a";
+                            e.target.style.color = "#fff";
+                          }}
+                          onMouseOut={(e) => {
+                            e.target.style.background = "#181818";
+                            e.target.style.color = "#fff";
+                          }}>
+                            View Details
+                          </button>
                         </Link>
                         {onCompareItem && (
                           <button
@@ -244,6 +285,14 @@ const CompareModal = ({
                               border: "none",
                               borderRadius: "4px",
                               cursor: "pointer",
+                            }}
+                            onMouseOver={(e) => {
+                              e.target.style.background = "#ffda3b";
+                              e.target.style.color = "#fff";
+                            }}
+                            onMouseOut={(e) => {
+                              e.target.style.background = "#ffc107";
+                              e.target.style.color = "#fff";
                             }}
                           >
                             Compare
